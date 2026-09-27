@@ -59,10 +59,10 @@ def probe(path, ffprobe):
 
 
 def finalize(raw, target, ffmpeg, ffprobe):
-    # Read the first five seconds at 25fps, finding the actual caption start.
+    # Allow a cold page load before the caption; decode only a tiny sync tile.
     # Scale-free rgb conversion before cropping avoids chroma subsampling loss.
     pixels = subprocess.check_output([
-        ffmpeg, "-v", "error", "-i", str(raw), "-t", "5", "-vf",
+        ffmpeg, "-v", "error", "-i", str(raw), "-t", "30", "-vf",
         "fps=25,format=rgb24,crop=2:2:22:690", "-f", "rawvideo", "-pix_fmt", "rgb24", "pipe:1"
     ])
     first = None

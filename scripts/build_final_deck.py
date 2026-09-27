@@ -18,15 +18,15 @@ import re
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "presentation"
 STEM = "Njia-Dhruzzz"
-DEMO_URL = "https://github.com/Eeshan-Vaghjiani/njia/releases/download/demo-v1/njia-demo-90s.webm"
+DEMO_URL = "https://github.com/Eeshan-Vaghjiani/njia/releases/download/demo-v1/njia-demo-90s.mp4"
 
 # Single source for every tested/observed figure shown in the deck, notes and README.
 # The first block carries over the verified values from the published deck. The
 # new-feature block stays None until the integrator has verified a value; None never
 # renders a number, only a neutral description of the feature.
 EVIDENCE = {
-    "backend_tests": 73,
-    "backend_count_source": "Main implementation owner confirmation",
+    "backend_tests": 126,
+    "backend_count_source": "Main implementation owner confirmation, 27 September 2026; separate unit-test suite",
     "acceptance_assertions": 48,
     "recording_assertions": 9,
     "provider": "Groq",
@@ -37,15 +37,22 @@ EVIDENCE = {
     "coverage": 39.6,
     "video_seconds": 90,
     "source": "Verified values carried over from the published deck (coach acceptance + demo recording runs).",
-    "factual_limit": "Observed unsupported real-time sales monitoring in a rewrite; human factual review required.",
+    "factual_limit": "Earlier rewrite added real-time sales monitoring; latest rewrite added unsupported inventory decisions to a personal dashboard. Human factual review required.",
     # New features. Fill only with verified values, e.g.
     # "live_jobs_example": {"count": 111, "role": "Data Analyst", "country": "Kenya", "date": "27 Sep 2026"},
     # "web_questions_example": {"count": 5, "role": "Data Analyst", "country": "Kenya"},
     # "new_feature_tests": 24,
-    "live_jobs_example": None,
-    "web_questions_example": None,
+    "live_jobs_example": {"count": 8, "local_count": 3, "role": "Data Analyst", "country": "Kenya", "date": "27 Sep 2026"},
+    "web_questions_example": {"count": 8, "role": "Data Analyst", "country": "Kenya"},
     "new_feature_tests": None,
-    "demo_predates_new_features": True,
+    "demo_predates_new_features": False,
+    "current_recording": {
+        "assertions": 19, "provider": "Groq", "model": "openai/gpt-oss-20b",
+        "questions_seconds": 1.271, "brief_seconds": 1.450, "feedback_seconds": 0.844,
+        "interview_seconds": 0.390, "feedback_score": 4, "javascript_errors": 0,
+        "source": "artifacts/njia-coach-demo-results.json", "nvidia_exercised": False,
+        "publication": "Local replacement ready; main handles release upload."
+    },
 }
 NEW_FEATURE_KEYS = ["live_jobs_example", "web_questions_example", "new_feature_tests"]
 TAGLINE = "Ask. Match. Practise. Your next move."
@@ -75,11 +82,11 @@ def seconds(key):
 def new_feature_parts():
     jobs, questions, tests = (EVIDENCE[k] for k in NEW_FEATURE_KEYS)
     return [
-        (f'{jobs["count"]:,} remote {jobs["role"]} jobs open to {jobs["country"]} ({jobs["date"]})' if jobs
+        (f'{jobs["count"]:,} remote + {jobs["local_count"]} local job cards shown' if jobs
          else "Remote jobs open to Kenya or worldwide"),
         (f'{questions["count"]} source-linked interview questions' if questions
          else "only source-verified web questions shown"),
-        (f"{tests} new-feature tests passed" if tests else "labelled fallback on provider failure"),
+        (f"{tests} new-feature tests passed" if tests else f'{EVIDENCE["current_recording"]["assertions"]} new recording checks passed'),
     ]
 
 
@@ -121,8 +128,8 @@ def build_content():
     e = EVIDENCE
     bt, acc, rec, total = e["backend_tests"], e["acceptance_assertions"], e["recording_assertions"], public_total()
     jobs = e["live_jobs_example"]
-    jobs_note = (f' In a live check on {jobs["date"]}, {jobs["count"]:,} remote {jobs["role"]} postings were open to'
-                 f' {jobs["country"]} or worldwide.' if jobs else "")
+    jobs_note = (f' In the public recording on {jobs["date"]}, {jobs["count"]:,} remote {jobs["role"]} cards and'
+                 f' {jobs["local_count"]} local cards were rendered for {jobs["country"]}. These are rendered card counts, not the source API total.' if jobs else "")
     rows = [json.loads(line) for line in
             (ROOT / "data/africa_jobs_subset.jsonl").read_text(encoding="utf-8").splitlines() if line]
     ke = [r for r in rows if r["job_country"] == "Kenya"]
@@ -142,6 +149,7 @@ def build_content():
         **{k: e[k] for k in NEW_FEATURE_KEYS},
         "unverified_new_feature_fields": [k for k in NEW_FEATURE_KEYS if e[k] is None],
         "demo_predates_new_features": e["demo_predates_new_features"],
+        "current_recording": e["current_recording"],
     }, indent=2), encoding="utf-8")
 
     s = slide("01  /  The Kenyan learner", "A CV tells your past.\nNjia helps choose your next step.", dark=True,
@@ -206,6 +214,11 @@ def build_content():
     s = slide("04  /  AI architecture & relevance", "Ground the facts. Personalize the next step.",
               "AI asks and coaches; code computes market figures and keeps only source-verified web results.", dark=True,
               notes=f"The brief uses Groq-hosted {e['model']}; public production desktop, mobile and recording runs of the earlier release confirmed this model. CV text goes to the AI provider only after opt-in and basic, best-effort PII redaction, which is not full anonymization. There is no application database persistence of the CV; this is not a provider-retention claim. New today: the AI asks three to five follow-up questions after the CV, and the answers reshape suggested skills and the brief. Remote jobs come from the Himalayas public jobs API, filtered to postings whose location restrictions include the user's country or worldwide. Local postings and reported interview questions come from Groq's built-in browser search; a web result is kept only when its URL appears in the search tool's evidence. Web searches receive only role, country and skill names, never CV text. Practice answers need separate consent, and feedback outlines use placeholders such as [your result] instead of inventing facts. Any provider failure falls back to clearly labelled curated or deterministic output. These checks do not prove semantic factuality: an earlier recorded rewrite added unsupported real-time sales monitoring, so human factual review remains necessary.")
+    s["notes"] += (" For JSON coaching calls (follow-ups, brief and practice feedback), Groq failure can trigger one "
+                   "NVIDIA API Catalog request using the same openai/gpt-oss-20b model; returned provenance names "
+                   "the actual provider. Web research uses the separate openai/gpt-oss-120b search model on Groq "
+                   "and has no NVIDIA browser-search backup. NVIDIA API Catalog is a hosted inference API, not Brev. "
+                   "The latest successful recording used Groq for all three coaching calls; NVIDIA was not exercised in that recording.")
     steps = [
         ("01", "CV + answers", "Opt-in + PII redaction\nCountry + target role\n3–5 follow-up questions\nAnswers reshape skills"),
         ("02", "Grounding", "CV + answer evidence\nFixed 2023 demand data\nAllowed skill vocabulary\nMatch % = skill overlap"),
@@ -222,7 +235,7 @@ def build_content():
     box(s, 76, 681, 1452, 118, "29435B", 10)
     label(s, "PRIVACY BOUNDARY", 105, 701, 380)
     text(s, "Web search gets role, country + skill names — never CV text", 470, 698, 1030, 37, 26, IVORY, True)
-    text(s, "CV to AI only with opt-in · practice answers need separate consent · provider failure → labelled fallback",
+    text(s, "Opt-in for CV + practice · Groq → NVIDIA backup (same 20b model) · web search: Groq only",
          105, 751, 1385, 30, 21, PALE)
 
     s = slide("05  /  Phone-first workflow", "A career next step, from a phone browser.",
@@ -267,21 +280,30 @@ def build_content():
     text(s, f"Panels illustrative. Skill match % = share of a posting's skills you have, not a hiring probability. Tested brief: {e['coverage']}% coverage, n = {e['sample_size']}.",
          76, 811, 1440, 24, 16, MUTED)
 
+    current = e["current_recording"]
     s = slide("06  /  Evidence & honest limits", "A working product. Evidence you can inspect.",
-              "Real public Groq calls · synthetic CVs · no mocked responses in the public checks.",
+              "126 unit tests (owner-reported) · 19 new public recording checks · earlier evidence kept separate.",
               notes=f"Main implementation owner confirms {bt} passing backend unit-test methods. Separately, {acc} public acceptance assertions and {rec} recording assertions passed, totaling {total} public assertions. No mocked responses. Desktop, mobile and recording used {e['provider']} {e['model']}. Observed elapsed times were {seconds('desktop')} desktop, {seconds('mobile')} mobile and {seconds('recording_with_pdf')} recording including PDF processing; these are individual observations, not a latency benchmark. The runs recorded {e['javascript_errors']} JavaScript errors. The sample used {e['sample_size']} Kenya Data Analyst postings and returned {e['coverage']}% demand-weighted coverage, not hiring odds. New today: " + "; ".join(new_feature_parts()) + ". Skill-match percentages measure skill overlap and are not a hiring probability. Semantic factuality is not guaranteed: the recorded rewrite added unsupported real-time sales monitoring, despite number/tool checks, and rewrites that use the learner's answers are labelled for verification. Human review is required. No real-user adoption or employment impact is claimed.")
+    s["notes"] += (f" Latest public recording: {current['assertions']} recording assertions passed, separate from the "
+                   f"earlier {total} public assertions. Groq {current['model']}: PDF plus follow-ups {current['questions_seconds']:.3f}s, "
+                   f"brief {current['brief_seconds']:.3f}s, feedback {current['feedback_seconds']:.3f}s. "
+                   "Eight remote and three local job cards; eight web-sourced interview questions; feedback score 4/5. "
+                   "Exactly 90 seconds, 1x, silent captions; no late cues, no JavaScript errors, no mocked responses. "
+                   "The new rewrite added unsupported inventory decisions to a personal synthetic-data dashboard; "
+                   "human factual review is still required. NVIDIA was configured as backup, not used in this recording.")
     box(s, 76, 360, 666, 225, NAVY, 12)
     label(s, "PASSED / TWO DISTINCT TEST LAYERS", 106, 381, 600, PALE)
     text(s, str(bt), 106, 418, 300, 98, 82, IVORY, True, True)
     text(s, str(total), 435, 418, 280, 98, 82, ORANGE, True, True)
     text(s, "backend tests", 110, 519, 290, 36, 25, PALE)
-    text(s, "public assertions", 439, 518, 290, 33, 24, PALE)
+    text(s, "earlier public checks", 439, 518, 290, 33, 23, PALE)
     text(s, f"{acc} acceptance + {rec} recording", 439, 553, 290, 25, 18, PALE)
     box(s, 780, 360, 748, 225, LIGHT, 12)
-    label(s, "LIVE GROQ BRIEF / OBSERVED RESPONSE TIMES", 812, 381, 690, INK)
-    text(s, f"{seconds('desktop')} desktop  /  {seconds('mobile')} mobile\n{seconds('recording_with_pdf')} recording, including PDF processing\n"
-            f"{e['javascript_errors']} JavaScript errors across these runs", 812, 424, 690, 100, 27, INK)
-    text(s, "Individual observations, not a performance benchmark.", 812, 540, 690, 27, 20, MUTED)
+    label(s, "NEW PUBLIC RECORDING / GROQ · GPT-OSS-20B", 812, 381, 690, INK)
+    text(s, f"{current['questions_seconds']:.3f}s PDF + follow-ups / {current['brief_seconds']:.3f}s brief\n"
+            f"{current['feedback_seconds']:.3f}s feedback · score {current['feedback_score']}/5\n"
+            f"{current['javascript_errors']} JavaScript errors · 90s video · 1× playback", 812, 424, 690, 100, 27, INK)
+    text(s, "Observed once; NVIDIA API Catalog backup not exercised.", 812, 540, 690, 27, 20, MUTED)
     box(s, 76, 603, 1452, 80, WHITE, 10)
     box(s, 76, 603, 6, 80, ORANGE)
     label(s, "NEW TODAY / FOLLOW-UPS · LIVE JOBS · WEB INTERVIEW QUESTIONS · ANSWER FEEDBACK", 106, 613, 1400, INK)
@@ -323,7 +345,7 @@ def build_content():
     for y, tag, display, url in [
         (552, "LIVE", "gomycode-2026.vercel.app", "https://gomycode-2026.vercel.app"),
         (626, "SOURCE", "github.com/Eeshan-Vaghjiani/njia", "https://github.com/Eeshan-Vaghjiani/njia"),
-        (700, f"{e['video_seconds']}-SECOND DEMO", "njia-demo-90s.webm · published", DEMO_URL)]:
+        (700, f"{e['video_seconds']}-SECOND DEMO", "njia-demo-90s.mp4 · published", DEMO_URL)]:
         label(s, tag, 827, y, 630)
         text(s, display, 827, y + 30, 669, 38, 22 if url == DEMO_URL else 24, IVORY, link=url)
     text(s, "Pilot invitation: Kenyan learners + training partners", 80, 768, 700, 37, 24, PALE)
@@ -436,8 +458,8 @@ def required_values():
     values = ["Dhruzzz", "Eeshan Vaghjiani", "Bhavin Mepani", "Dhruvin Bhudia", "18,371", "1,326",
               str(e["sample_size"]), str(e["backend_tests"]), str(public_total()),
               f'{e["acceptance_assertions"]} acceptance + {e["recording_assertions"]} recording',
-              f'{e["coverage"]}%', seconds("desktop"), seconds("mobile"), seconds("recording_with_pdf"),
-              TAGLINE, "not a hiring probability", "never CV text", "Uses your answer — verify",
+              f'{e["coverage"]}%', f'{e["current_recording"]["brief_seconds"]:.3f}s',
+              TAGLINE, "not a hiring probability", "never CV text", "Uses your answer — verify", "NVIDIA backup",
               "Which jobs can I apply for now?", "Am I ready for the interview?"]
     if e["live_jobs_example"]:
         values.append(f'{e["live_jobs_example"]["count"]:,} remote')
@@ -518,14 +540,18 @@ def validate():
                           "No stale count, unfilled value or stale release text",
                           "Published demo URL in PPTX, PDF and HTML", "Human factual-review caveat retained",
                           "Not-a-hiring-probability and web-search privacy boundary retained"],
-                  unverified_new_feature_fields=evidence["unverified_new_feature_fields"],
-                  advisor_validation=f"{bt} backend tests confirmed by main owner; {acc} public acceptance + {rec} recording assertions; human factual review required")
+                   unverified_new_feature_fields=evidence["unverified_new_feature_fields"],
+                   current_recording=EVIDENCE["current_recording"],
+                   advisor_validation=f"{bt} backend tests confirmed by main owner; {acc} public acceptance + {rec} recording assertions; human factual review required")
     (OUT / "validation.json").write_text(json.dumps(result, indent=2), encoding="utf-8")
     print(json.dumps(result, indent=2))
 
 
 def write_supporting(evidence):
     e = EVIDENCE
+    demo_note = ("This published recording predates the follow-up questions, live jobs, web interview questions "
+                 "and practice feedback. Replace it only after the updated public run is verified."
+                 if e["demo_predates_new_features"] else "The published recording shows the updated coach journey.")
     (OUT / "data-evidence.json").write_text(json.dumps(evidence, indent=2), encoding="utf-8")
     (OUT / "speaker-notes.md").write_text("# Njia — speaker notes\n\n" + "\n\n".join(
         f'## {i+1}. {s["title"].replace(chr(10), " ")}\n\n{s["notes"]}' for i, s in enumerate(SLIDES)), encoding="utf-8")
@@ -552,26 +578,41 @@ Njia asks before it advises: after the CV it asks a few follow-up questions whos
 reshape suggested skills and the brief. It matches the learner to live jobs they can apply
 for, with a skill-match % (skill overlap, not a hiring probability), and supports interview
 practice with source-linked questions from the web and AI feedback on typed answers. Web
-searches receive only role, country and skill names — never CV text. Provider failures fall
-back to labelled curated or deterministic output.
+searches receive only role, country and skill names — never CV text. JSON coaching calls can
+fall back from Groq to the NVIDIA API Catalog on the same `openai/gpt-oss-20b` model, with
+actual-provider labels. Web research uses Groq `openai/gpt-oss-120b` browser search and has no
+NVIDIA search backup. Provider failures ultimately return labelled curated or deterministic output.
 
-## Current production evidence
+## Unit-test evidence (separate from browser assertions)
 {e["backend_tests"]} backend test methods passed ({e["backend_count_source"].lower()}), distinct from
 {public_total()} public assertions: {e["acceptance_assertions"]} acceptance + {e["recording_assertions"]} recording.
+Those {public_total()} public assertions are earlier-release evidence, not a new acceptance run.
 Real {e["provider"]} / {e["model"]}: {seconds("desktop")} desktop, {seconds("mobile")} mobile, {seconds("recording_with_pdf")} recording including PDF.
 Individual observations, not a performance benchmark. {e["javascript_errors"]} JavaScript errors in these runs.
 Sample: {e["sample_size"]} historical Kenya Data Analyst postings, {e["coverage"]}% demand-weighted coverage, not hiring odds.
 New features: {new_features}.
 See `production-evidence.json` for the precise count breakdown and unverified fields.
 
-CV rewrites checked for numbers/tools, still require human factual review. The recording
-contains unsupported “real-time sales monitoring” in a rewrite. The checks do not guarantee
+## New public recording (27 September 2026)
+**19 checks passed**, separate from the earlier 57 public assertions and 126 owner-reported unit tests.
+Actual provider: **Groq / openai/gpt-oss-20b** for follow-ups, brief and feedback.
+Observed: **1.271s PDF + follow-ups; 1.450s brief; 0.844s feedback**. Feedback score: **4/5**.
+Rendered **8 remote + 3 local job cards**, plus **8 web-sourced interview questions** via Groq
+`openai/gpt-oss-120b`. Exactly **90.000 seconds**, 1×, silent captions, no late cues or JavaScript errors.
+No mocked responses. NVIDIA **API Catalog**, not Brev, is the configured same-model backup;
+it was not exercised in this recording. Local replacement is ready; main handles release upload.
+
+CV rewrites checked for numbers/tools, still require human factual review. An earlier recording
+contained unsupported “real-time sales monitoring”; the latest added unsupported inventory decisions
+to a personal synthetic-data dashboard. The checks do not guarantee
 semantic factuality. Rewrites that use the learner's own answers are labelled for verification.
 The deck's before/after example is illustrative and hand-authored.
 
 ## Published demo
 The published `demo-v1` recording is exactly {e["video_seconds"]} seconds. Slide 8 links to it:
 {DEMO_URL}
+
+{demo_note}
 
 Illustrative persona, CV output and phone panels are explicitly labeled. The pilot is a plan,
 not adoption. The priority dataset is a 2023 historical sample, not current vacancies. CV

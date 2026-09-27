@@ -1,6 +1,6 @@
 {
-  "backend_tests_passed": 73,
-  "backend_count_source": "Main implementation owner confirmation",
+  "backend_tests_passed": 126,
+  "backend_count_source": "Main implementation owner confirmation, 27 September 2026; separate unit-test suite",
   "public_acceptance_assertions": 48,
   "recording_assertions": 9,
   "public_total": 57,
@@ -15,9 +15,37 @@
   "sample_size": 391,
   "coverage": 39.6,
   "video_seconds": 90,
-  "source_artifacts": [
-    "artifacts/coach-acceptance-results.json",
-    "artifacts/njia-coach-demo-results.json"
+  "source": "Verified values carried over from the published deck (coach acceptance + demo recording runs).",
+  "factual_limit": "Earlier rewrite added real-time sales monitoring; latest rewrite added unsupported inventory decisions to a personal dashboard. Human factual review required.",
+  "live_jobs_example": {
+    "count": 8,
+    "local_count": 3,
+    "role": "Data Analyst",
+    "country": "Kenya",
+    "date": "27 Sep 2026"
+  },
+  "web_questions_example": {
+    "count": 8,
+    "role": "Data Analyst",
+    "country": "Kenya"
+  },
+  "new_feature_tests": null,
+  "unverified_new_feature_fields": [
+    "new_feature_tests"
   ],
-  "factual_limit": "Observed unsupported real-time sales monitoring in a rewrite; human factual review required."
+  "demo_predates_new_features": false,
+  "current_recording": {
+    "assertions": 19,
+    "provider": "Groq",
+    "model": "openai/gpt-oss-20b",
+    "questions_seconds": 1.271,
+    "brief_seconds": 1.45,
+    "feedback_seconds": 0.844,
+    "interview_seconds": 0.39,
+    "feedback_score": 4,
+    "javascript_errors": 0,
+    "source": "artifacts/njia-coach-demo-results.json",
+    "nvidia_exercised": false,
+    "publication": "Local replacement ready; main handles release upload."
+  }
 }

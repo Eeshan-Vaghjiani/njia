@@ -2,8 +2,8 @@
   "pptx_slides": 8,
   "pdf_pages": 8,
   "aspect_ratio": "16:9",
-  "pptx_bytes": 63072,
-  "pdf_bytes": 249822,
+  "pptx_bytes": 65517,
+  "pdf_bytes": 258841,
   "checks": [
     "Slide/page count",
     "Required content in PPTX and PDF",
@@ -11,10 +11,28 @@
     "Speaker notes on all slides",
     "PDF searchable text",
     "PDF aspect ratio",
-    "73 backend tests; 57 public assertions = 48 + 9",
-    "No stale count or pending release text",
+    "126 backend tests; 57 public assertions = 48 + 9",
+    "No stale count, unfilled value or stale release text",
     "Published demo URL in PPTX, PDF and HTML",
-    "Human factual-review caveat retained"
+    "Human factual-review caveat retained",
+    "Not-a-hiring-probability and web-search privacy boundary retained"
   ],
-  "advisor_validation": "73 backend tests confirmed by main owner; 48 public acceptance + 9 recording assertions verified from artifacts; human factual review required"
+  "unverified_new_feature_fields": [
+    "new_feature_tests"
+  ],
+  "current_recording": {
+    "assertions": 19,
+    "provider": "Groq",
+    "model": "openai/gpt-oss-20b",
+    "questions_seconds": 1.271,
+    "brief_seconds": 1.45,
+    "feedback_seconds": 0.844,
+    "interview_seconds": 0.39,
+    "feedback_score": 4,
+    "javascript_errors": 0,
+    "source": "artifacts/njia-coach-demo-results.json",
+    "nvidia_exercised": false,
+    "publication": "Local replacement ready; main handles release upload."
+  },
+  "advisor_validation": "126 backend tests confirmed by main owner; 48 public acceptance + 9 recording assertions; human factual review required"
 }

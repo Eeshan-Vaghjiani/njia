@@ -11,6 +11,10 @@
 !njia/engine.py
 !njia/uploads.py
 !njia/advisor.py
+!njia/groq_client.py
+!njia/questions.py
+!njia/jobs.py
+!njia/interview.py
 !static/
 !static/index.html
 !static/app.js
@@ -19,5 +23,10 @@
 !static/coach.html
 !static/coach.css
 !static/coach.js
+!static/followup.css
+!static/jobs.css
+!static/jobs.js
+!static/interview.css
+!static/interview.js
 !data/
 !data/africa_jobs_subset.jsonl

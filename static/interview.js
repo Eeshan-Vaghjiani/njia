@@ -120,7 +120,7 @@
       <label for="practice-answer">Your answer</label>
       <textarea id="practice-answer" rows="7" maxlength="3000" aria-describedby="practice-help" placeholder="Answer as you would out loud. Try STAR: Situation, Task, Action, Result. Use only real facts.">${esc(draft)}</textarea>
       <div class="text-meta"><span id="practice-help">20–3,000 characters. Remove names and contact details.</span><span id="practice-count">${draft.length.toLocaleString()} / 3,000</span></div>
-      <label class="check-label practice-consent" for="practice-consent"><input id="practice-consent" type="checkbox"><span>Send my answer, with basic contact redaction, to the AI provider for feedback</span></label>
+      <label class="check-label practice-consent" for="practice-consent"><input id="practice-consent" type="checkbox"><span>Send my answer and matching CV evidence, with basic contact redaction, to Groq or its NVIDIA API Catalog backup for feedback</span></label>
       ${s.evidence ? '<p class="hint">Your matching CV evidence quote is sent too, so the outline can use your real facts.</p>' : ""}
       <div class="inline-actions"><button id="practice-submit" class="primary-button" type="button"><span>Get feedback</span><span aria-hidden="true">↗</span></button><button id="practice-cancel" class="text-button" type="button" hidden>Cancel</button></div>
       <div id="practice-error" class="error-panel" role="alert" hidden></div>
@@ -178,7 +178,7 @@
     if (answer.trim().length < 20) { state.feedbackError = "Write at least 20 characters so there is something to review."; state.feedbackRetry = false; renderFeedback(); $("practice-answer").focus(); return; }
     if (!$("practice-consent").checked) { state.feedbackError = "Tick the consent box to send your answer for feedback."; state.feedbackRetry = false; renderFeedback(); $("practice-consent").focus(); return; }
     const request = ++state.fRequest; const controller = new AbortController(); state.fController = controller;
-    const timer = withTimeout(controller, 45000);
+    const timer = withTimeout(controller, 65000);
     state.submitting = true; state.feedbackError = ""; state.feedbackRetry = true; renderFeedback();
     try {
       const body = {role:state.target?.role, question:s.question.slice(0, 500), answer, consent:true};

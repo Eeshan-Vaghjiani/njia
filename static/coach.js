@@ -47,7 +47,7 @@
     if (state.busy) return;
     clearError(); const request = ++state.request; const controller = new AbortController(); state.controller = controller; setBusy(true);
     let timedOut = false;
-    const timer = setTimeout(() => { timedOut = true; controller.abort(); }, 90000);
+    const timer = setTimeout(() => { timedOut = true; controller.abort(); }, 130000);
     try { await task(controller.signal); }
     catch (error) {
       if (request !== state.request) return;
@@ -88,7 +88,7 @@
       let questions = null;
       try {
         // Follow-up questions are optional: any failure goes straight to the brief.
-        const questionSignal = typeof AbortSignal.any === "function" && typeof AbortSignal.timeout === "function" ? AbortSignal.any([signal, AbortSignal.timeout(25000)]) : signal;
+        const questionSignal = typeof AbortSignal.any === "function" && typeof AbortSignal.timeout === "function" ? AbortSignal.any([signal, AbortSignal.timeout(45000)]) : signal;
         questions = await api("/api/questions", {...selected, text, consent:true}, questionSignal);
       } catch (error) { if (signal.aborted) throw error; questions = null; }
       signal.throwIfAborted();
