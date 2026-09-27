@@ -8,7 +8,7 @@ Sources checked on **27 September 2026**: [official onboarding](https://hackatho
 
 ## Latest recording evidence and cue source
 
-The cues below follow the inspected [recorder timeline](../scripts/record_coach_demo.py), its live [coach HTML](../static/coach.html), and [successful results JSON](https://github.com/Eeshan-Vaghjiani/njia/releases/download/demo-v1/njia-coach-demo-results.json), including its `caption_corrections` disclosure. Final delivery is the corrected [MP4 video](https://github.com/Eeshan-Vaghjiani/njia/releases/download/demo-v1/njia-demo-90s.mp4): **H.264, faststart, approximately 4.2 MB**, 90.000 seconds, 1280×720, **1×, 25 fps, 2,250 frames**, silent with visible captions. It was converted from the latest corrected recording; WebM is retained only as an optional source. The latest eight-page PDF/PPTX, recording JSON, NVIDIA JSON and voiceover are also published.
+The cues below follow the inspected [recorder timeline](../scripts/record_coach_demo.py), its live [coach HTML](../static/coach.html), and [successful results JSON](https://github.com/Eeshan-Vaghjiani/njia/releases/download/demo-v1/njia-coach-demo-results.json), including its `caption_corrections` disclosure. Final delivery is the corrected [MP4 video](https://github.com/Eeshan-Vaghjiani/njia/releases/download/demo-v1/njia-demo-90s.mp4): **H.264, faststart, 6,303,031 bytes**, 90.000 seconds, 1280×720, **1×, 25 fps, 2,250 frames**, with **real user-provided human narration, AAC 48 kHz stereo audio and visible captions**. At the user's request, the existing release asset was replaced at this same URL. The historical WebM remains silent and is retained only as an optional source. The latest eight-page PDF/PPTX, recording JSON, NVIDIA JSON and voiceover are also published.
 
 **19 checks passed**, zero late cues, zero JavaScript errors, zero mocked responses. Real Groq `openai/gpt-oss-20b` returned **four follow-ups in 1.271 s including PDF upload**, the **brief in 1.450 s**, and **feedback in 0.844 s**, scoring **4/5**. The screen shows **8 remote + 3 local job cards**, and **8 web interview questions from 3 source URLs**, researched with Groq `openai/gpt-oss-120b`. This is separate from the older **57 public assertions (48 + 9)** and main-reported **126 offline backend tests**.
 
@@ -21,11 +21,11 @@ Initial cache warming failed on interview research; three recording attempts the
 - **53.240–57.280 s** (end exclusive): “Draft rewrites need factual review. Verify every claim against your CV and answers; AI can add unsupported details.”
 - **76.360–83.440 s** (end exclusive): “AI feedback suggests structure. Verify every fact; it can add unsupported details.”
 
-The old captions are no longer present. Offline PNG overlays and a lossless VP9 re-encode preserved app/model output pixels outside that rectangle in **every frame**, with identical decoded frame hashes outside correction windows, as recorded in JSON `caption_corrections`; those checks apply to the corrected WebM source before H.264 MP4 conversion. No output content was fabricated or edited and no new API calls or recording run were made. Final MP4 delivery remains **90.000 seconds, 1×, no audio**. The narration below follows the same cues; passing engineering checks is not a factual guarantee.
+The old captions are no longer present. Offline PNG overlays and a lossless VP9 re-encode preserved app/model output pixels outside that rectangle in **every frame**, with identical decoded frame hashes outside correction windows, as recorded in JSON `caption_corrections`; those checks apply to the corrected WebM source before H.264 MP4 conversion. No app/model output content was fabricated or edited and no new API calls or recording run were made. The subsequent human-narration mix copied the MP4 video stream unchanged, hash-verified, retaining **90.000 seconds and 1×**. Original recording check counts are unchanged. The script below uses the planned cues; the supplied recording's wording and semantic alignment have not been verified by listening in the development workflow.
 
 ## Narration — 170 words
 
-Read only the quoted paragraphs, starting at each cue. Pause when finished and rehearse against the published corrected video; word count alone does not guarantee duration. “Groq” is the provider; if expanding the model name in rehearsal, say “GPT OSS twenty B.”
+This is the prepared 170-word script and intended cue guide, not a verified transcript of the supplied human recording. Its original reading guidance was to start each quoted paragraph at its cue and pause when finished; word count alone does not guarantee duration. “Groq” is the provider; the model name can be read as “GPT OSS twenty B.”
 
 ### 00:00–00:05 · Introduction
 > We're Dhruzzz from Kenya, joining online. Njia helps jobseekers choose their next move.
@@ -77,6 +77,14 @@ Read only the quoted paragraphs, starting at each cue. Pause when finished and r
 
 ## Recording and mix
 
-If adding narration, record the microphone while watching the published corrected video, align speech to these cues, and retain its corrected captions. Export a separate narrated copy at exactly 90 seconds and 1×; check duration, cue alignment and the audible ending before hosting. The current video has no audio stream; this script does not claim narration has been added. No new video run is needed for the published handoff.
+The user explicitly supplied human audio and requested that the same submitted video URL be updated. The main workflow completed the mix with [scripts/add_voiceover.py](../scripts/add_voiceover.py) and replaced the existing `njia-demo-90s.mp4` release asset using `--clobber`.
+
+- Narration duration: **85.421083 seconds**, starting at **0**, normal speed, with original pauses retained and silence padding to **90.000 seconds**.
+- Audio processing: **70 Hz high-pass**, **loudnorm** loudness normalization, **AAC 192 kb/s, 48 kHz stereo**. This is a real human voice, not synthetic narration.
+- Video: **H.264, 1280×720, 25 fps**, copied unchanged from the corrected MP4; video-stream hash preservation verified.
+- Published MP4: **6,303,031 bytes**; SHA-256: `00929c0452f1d06ec17b109e23902d8805111c4a2df00a2a1a03f0eb06e6a2d9`.
+- Public evidence: [narration-results.json](https://github.com/Eeshan-Vaghjiani/njia/releases/download/demo-v1/narration-results.json). Main-workflow verification covers technical playback only; it does not establish a listening review, semantic cue alignment or an audible-ending review.
+
+The user reports this video URL was submitted; form receipt not verified by the development workflow.
 
 Word count covers whitespace-delimited words in the quoted narration only, excluding headings and notes.

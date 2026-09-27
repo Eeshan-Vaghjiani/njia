@@ -1,6 +1,6 @@
 # Final submission checklist — Dhruzzz / Kenya / ONLINE
 
-**27 September 2026 · Submission pending.** The final answers are in [SUBMISSION_DRAFT.md](SUBMISSION_DRAFT.md). Deadline: **today, 19:30 EAT / 16:30 UTC**. A source push or release upload is not a form submission.
+**27 September 2026 · The user reports this video URL was submitted; form receipt not verified by the development workflow.** The final answers are in [SUBMISSION_DRAFT.md](SUBMISSION_DRAFT.md). Deadline: **today, 19:30 EAT / 16:30 UTC**.
 
 ## Final decisions and prepared material
 
@@ -21,9 +21,9 @@
 | Latest reported checks | **126 backend tests passed offline**; **19 latest public-recording checks**, zero late cues/JavaScript errors. Older **57 public assertions (48 + 9)** are separate historical evidence |
 | NVIDIA evidence | Separate local forced-Groq-unavailable test: **5 validated questions / 11.564 s**, **7-day validated brief / 16.637 s**, actual `openai/gpt-oss-20b`, one NVIDIA request each; not shown in video or proof of production failover |
 | Presentation | Regenerated **8 pages**, locally with **python-pptx + Playwright**; PDF/PPTX published at same URLs |
-| Demo | Final **MP4: H.264, 1280×720, 25 fps, faststart, approximately 4.2 MB, 90.000 seconds**, silent captioned public-app recording, 1×, 19 checks passed; real Groq output, zero mocked responses. Converted from the latest caption-corrected recording with no app/model output content edits. WebM retained only as an optional source; pixel-preservation checks apply to that source |
-| Voiceover | [Ready script](VOICEOVER.md); the published demo is captioned, and narration is not explicitly mandatory in the official requirements |
-| Publication status | **Latest app deployed; PDF/PPTX, corrected video, recording JSON, NVIDIA JSON and voiceover published at same URLs; official form not submitted** |
+| Demo | Final **MP4: H.264, 1280×720, 25 fps, faststart, 6,303,031 bytes, 90.000 seconds, AAC 48 kHz stereo**, real human narration + captions, 1×. Original recording: 19 checks passed; real Groq output, zero mocked responses. Corrected MP4 video stream copied unchanged and hash-verified during narration mix. Historical WebM remains silent and optional; caption pixel-preservation checks apply to that source |
+| Voiceover | User-provided **85.421083-second human recording**, starting at 0, normal speed and original pauses retained, silence-padded to 90 seconds; 70 Hz high-pass, loudnorm, AAC 192 kb/s. [Script and mix details](VOICEOVER.md); technical playback verified by main, listening/semantic timing not verified |
+| Publication status | **Latest app deployed; PDF/PPTX, narrated video, recording JSON, NVIDIA JSON, narration JSON and voiceover script published. Existing MP4 release asset replaced at the same submitted URL at the user's request; form receipt not verified by the development workflow** |
 
 ## Final links
 
@@ -38,6 +38,7 @@
 | Recording evidence and caption-correction disclosure | https://github.com/Eeshan-Vaghjiani/njia/releases/download/demo-v1/njia-coach-demo-results.json |
 | Separate local NVIDIA evidence | https://github.com/Eeshan-Vaghjiani/njia/releases/download/demo-v1/nvidia-fallback-results.json |
 | Voiceover release asset | https://github.com/Eeshan-Vaghjiani/njia/releases/download/demo-v1/VOICEOVER.md |
+| Narration technical evidence | https://github.com/Eeshan-Vaghjiani/njia/releases/download/demo-v1/narration-results.json |
 
 Open these published links signed out during the final review.
 
@@ -57,13 +58,16 @@ The form requests URLs rather than file uploads. A hosted PDF can be the present
 
 - [Latest recording JSON](https://github.com/Eeshan-Vaghjiani/njia/releases/download/demo-v1/njia-coach-demo-results.json): four Groq 20b questions **1.271 s including upload**, brief **1.450 s**, feedback **0.844 s**, score **4/5**; **8 remote + 3 local cards**, **8 web interview questions / 3 source URLs** on Groq 120b. `caption_corrections` records the two caption-only postproduction overlays; no new API calls or recording run.
 - [Local NVIDIA JSON](https://github.com/Eeshan-Vaghjiani/njia/releases/download/demo-v1/nvidia-fallback-results.json): two real validated fallback responses with Groq forced unavailable; no feedback inference in this test.
+- [Narration JSON](https://github.com/Eeshan-Vaghjiani/njia/releases/download/demo-v1/narration-results.json) and [mix script](../scripts/add_voiceover.py): main completed technical playback verification and video-stream hash preservation; no listening or semantic cue-alignment review claimed. Published MP4 SHA-256: `00929c0452f1d06ec17b109e23902d8805111c4a2df00a2a1a03f0eb06e6a2d9`. Original recording counts are unchanged.
 - [Session disclosure](AI_DISCLOSURE.md#data-and-evaluation): initial cache warming returned jobs but curated interview fallback, then three recording attempts failed on search timing/local-card availability before the final success. **27 application POSTs** across the session; the final **0.390 s interview response was cached**. A separately observed search used **93,301 tokens**; exact session provider token use/cost is unknown. The successful run had no failed checks; this does not describe all attempts as flawless.
 - Provider scope: brief fallback covers provider errors and invalid assessments; questions/feedback fail over on shared-client provider errors, while later feature-validation failures go directly to curated/checklist output. Missing Groq credentials still permit configured NVIDIA coaching.
 
-## Last steps — review and submit
+## Last steps — review and confirm receipt
 
 - [x] **Deploy:** latest features live at https://gomycode-2026.vercel.app, NVIDIA key configured (main-workflow report).
 - [x] **Record and regenerate:** new exact-90-second video passed 19 checks; eight-page deck regenerated.
 - [x] **Publication:** latest PDF/PPTX, corrected video, recording JSON, NVIDIA JSON and voiceover uploaded at the same public URLs. No additional recording is needed.
+- [x] **Human narration:** user-supplied audio mixed into the exact-90-second MP4; existing release asset replaced with `--clobber` at the same submitted URL, with technical evidence published.
 - [ ] **Human final review:** open source/PDF/video signed out, verify the eight-page deck/exact-90-second coach recording, and review all 20 required answers plus the optional evidence. Confirm roster/registration details, enter the leader contact information privately, retain Click Mobile as primary with all four partner selections, and check the final confirmation when the deliverables are accessible and final.
-- [ ] **Human form submission:** submit the [official form](https://docs.google.com/forms/d/e/1FAIpQLSebmyKeBPv2mrmy4T_wI2_z9SBjjSTZ-O-_ewiWs6PBEikRjw/viewform) once before **19:30 EAT** and save the receipt. **Not submitted at this handoff.**
+- [ ] **Narration listening review:** listen to the published MP4 and check spoken content, cue alignment and the audible ending; the development workflow verified technical playback only.
+- [ ] **Form receipt verification:** the user reports this video URL was submitted; form receipt not verified by the development workflow. Confirm/save the receipt for the [official form](https://docs.google.com/forms/d/e/1FAIpQLSebmyKeBPv2mrmy4T_wI2_z9SBjjSTZ-O-_ewiWs6PBEikRjw/viewform).
