@@ -1,14 +1,20 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "framework": null,
-  "functions": {
-    "api/index.py": {
-      "includeFiles": "{njia/*.py,static/index.html,static/app.js,static/styles.css,static/sample-cv.txt,data/africa_jobs_subset.jsonl}",
-      "excludeFiles": "{.env,.env.*,.venv/**,.git/**,.agents/**,.claude/**,artifacts/**,docs/**,tests/**,scripts/**,**/__pycache__/**,**/*.pyc,**/*.pptx}",
-      "maxDuration": 60
+  "services": {
+    "njia": {
+      "root": ".",
+      "runtime": "python",
+      "framework": "fastapi",
+      "entrypoint": "njia.app:app"
     }
   },
   "rewrites": [
-    { "source": "/(.*)", "destination": "/api/index" }
+    {
+      "source": "/(.*)",
+      "destination": {
+        "type": "service",
+        "service": "njia"
+      }
+    }
   ]
 }

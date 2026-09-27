@@ -2,7 +2,9 @@
 
 Njia is a career-coaching prototype built with **FastAPI and static JavaScript**. It compares self-reported skills with historical tech/data job postings, suggests a four-week learning path, and offers short practice checks and a downloadable Markdown evidence report.
 
-**Team Dhruzzz · Kenya · ONLINE.** Public repository creation/access verified: https://github.com/Eeshan-Vaghjiani/njia. Team identity/contact details are held privately for submission. Vercel is not authenticated; no public deployment is complete. The presentation outline is ready, but Felo export remains blocked by a missing API key.
+**Team Dhruzzz · Kenya · ONLINE.** **Live app: https://gomycode-2026.vercel.app — public browser verification PASS, 38 checks**, on 2026-09-27 at **10:25:42–10:26:00 UTC** (`artifacts/deployed-results.json`). Anonymous health returned **HTTP 200**, **18,371 postings**. Public repository access verified: https://github.com/Eeshan-Vaghjiani/njia. Team identity/contact details are held privately for submission. The presentation is outline-only; final Felo export is blocked by missing `FELO_API_KEY`.
+
+Deployment uses Vercel project `eeshans-projects-0934fb87/gomycode-2026` and a successful CLI source deploy. Automatic GitHub connection failed; automatic deployment is not configured. See [deployment details](docs/DEPLOYMENT.md).
 
 **90-second demo:** [view the release page](https://github.com/Eeshan-Vaghjiani/njia/releases/tag/demo-v1) or [download the video](https://github.com/Eeshan-Vaghjiani/njia/releases/download/demo-v1/njia-demo-90s.webm). The published `artifacts/njia-demo-90s.webm` is **exactly 90.000 seconds, 1280 × 720**, a normal-speed actual-app recording of CV upload and real Groq coaching, silent with Playwright captions. Anonymous access verified: direct asset HEAD **200**, **3,498,819 bytes**.
 
@@ -71,7 +73,7 @@ Raw experience text and uploaded documents are sent to the app server and proces
 
 Basic redaction removes email addresses, phone-like numbers, links, and explicitly labelled identity lines before extraction. It can miss personal details and remove unrelated numbers; it is **not full anonymization**. Downloaded reports are intentionally saved files and include confirmed skills and any submitted practice reflection, but not raw CV text.
 
-The default `NJIA_AI_PROVIDER=offline` needs no inference credentials. Optional providers are documented in `.env.example`; configure them in the server environment. The app also loads a root `.env` if present.
+The default `NJIA_AI_PROVIDER=offline` needs no inference credentials. The live Vercel app is configured for Groq with `GROQ_MODEL=openai/gpt-oss-20b`; remote use still requires opt-in. Optional providers are documented in `.env.example`; configure them in the server environment. The app also loads a root `.env` if present.
 
 **Hosted Groq is implemented and live-tested by the main workflow on 2026-09-27:** the actual model `openai/gpt-oss-20b` returned a four-week plan in **2.27 seconds** in one observed run. The account's model list did not offer the original `llama-3.3-70b-versatile`, so the default was changed to `openai/gpt-oss-20b`. This is a single integration observation, not a latency benchmark or quality evaluation. Set `NJIA_AI_PROVIDER=groq`, a server-held `GROQ_API_KEY`, and `GROQ_MODEL=openai/gpt-oss-20b` to configure it.
 
@@ -92,6 +94,8 @@ Optional models rewrite only plan titles, tasks, and deliverables from structure
 Development used OpenCode with main agent label `github-copilot/gpt-6-astra` and parallel coding/review agents in the same harness; their underlying model identities were not independently established. UI visuals are code-native HTML/CSS. The captioned Playwright demo records the actual app and real model output, with no fabricated screenshots/output or synthetic voice. See [AI disclosure](docs/AI_DISCLOSURE.md) for runtime boundaries and validation details.
 
 ## Checks and recorded results
+
+**Production Chromium: 38/38 PASS**, fresh anonymous desktop **1440×1100** and touch-mobile **390×844** contexts, synthetic inputs, no mocked responses. Desktop actual PDF upload → editable preview → consent-gated extraction → Kenya/Data Analyst (**391 postings, 39.6%**) passed, followed by four curated weeks with AI opt-in unchecked, one opted-in real Groq response (**`mode=groq`, `openai/gpt-oss-20b`, four weeks, 1.831 s**), SQL **3/3**, and Markdown report download. Fresh mobile TXT upload → reviewed preview/extraction → gap analysis passed without horizontal overflow. Observed JavaScript errors, console errors, failed requests and HTTP 403s: **zero**. This single Groq observation is not a benchmark. Public DOCX, near-limit uploads and physical phones were not tested; the local results below retain their separate scope.
 
 From the project root, run:
 
@@ -132,7 +136,7 @@ On Linux, use `.venv/bin/python` for these commands; Chromium may also require P
 
 **Current mobile TXT upload: PASS.** `scripts/mobile_upload_test.py` passed Chromium mobile emulation at **390×844, touch=True**: actual synthetic TXT file upload with processing consent → text preview → extraction → Kenya gap analysis (**39.6%**) → four-week curated plan → Markdown download. The result records **0 model calls and 0 JavaScript errors**; the script also passed its horizontal-overflow assertion at analysis. This verifies TXT on an emulated mobile browser, not mobile PDF/DOCX or a physical phone. Local evidence: `artifacts/mobile-upload-results.json` and `artifacts/mobile-upload-plan.png`. Genuine user feedback has not been collected.
 
-`artifacts/` is ignored by Git, so artifact paths here refer to local files rather than public repository links. Selected JSON evidence is planned for the [demo-v1 release](https://github.com/Eeshan-Vaghjiani/njia/releases/tag/demo-v1); only assets actually attached there are publicly downloadable. See [local test results](docs/LOCAL_TEST_RESULTS.md) for the recorded scope.
+`artifacts/` is Git-ignored. The main workflow is publishing JSON evidence and screenshots to the existing [demo-v1 release](https://github.com/Eeshan-Vaghjiani/njia/releases/tag/demo-v1); only attached assets are publicly downloadable. See [test results](docs/LOCAL_TEST_RESULTS.md) for production timestamps, captures and local scope.
 
 All five asynchronous regression checks passed on the current build, deliberately delivering held responses after newer user actions: clear-during-extraction, competing plans, assessment restart, competing grades, and preserving answers across tabs. Run them against the local server with:
 
@@ -151,4 +155,4 @@ All five asynchronous regression checks passed on the current build, deliberatel
 - `tests/`, `scripts/`, `artifacts/`: automated checks, evaluation, and recorded outputs.
 - [90-second demo](docs/DEMO.md) and [AI disclosure](docs/AI_DISCLOSURE.md).
 
-`GAME_PLAN.md`, `STRATEGY.md`, research notes, and existing pitch decks are earlier planning material, not current capability evidence. Use the current source, these docs, and [presentation outline](docs/PRESENTATION_OUTLINE.md) for claims. Groq passed a real browser check; NVIDIA Brev is not used. Source and video are published with anonymous access verified. Public deployment awaits Vercel login; login instructions have been provided. Final presentation export awaits a Felo key; submission remains pending.
+`GAME_PLAN.md`, `STRATEGY.md`, research notes, and existing pitch decks are earlier planning material. Use the current source, these docs, and [presentation outline](docs/PRESENTATION_OUTLINE.md) for claims. NVIDIA Brev is not used. Source and video access are verified; the [live Vercel app](https://gomycode-2026.vercel.app) passed the 38 production checks scoped above. Final presentation export awaits `FELO_API_KEY`; submission remains pending.

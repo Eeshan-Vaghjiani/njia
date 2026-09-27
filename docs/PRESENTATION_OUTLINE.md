@@ -6,7 +6,7 @@
 
 This outline replaces the older decks, which are **obsolete**. It is presentation copy and direction, not a generated or hosted deck. The required **90-second demo video is a separate deliverable**; no official slide count or separate presentation duration is specified.
 
-**Checkpoint:** 57 unit tests passed; latest current-build desktop/mobile core and all five race checks passed, as did desktop PDF/DOCX/TXT upload and real Groq. Dedicated mobile TXT upload passed at **390×844, touch=True** in Chromium emulation through consent, preview, extraction, Kenya **39.6%** gap, four-week curated plan and Markdown download, with **0 model calls, 0 JavaScript errors** and no horizontal overflow at the analysis assertion. Mobile PDF/DOCX and physical-phone upload remain unverified. Source and exactly 90-second captioned video are published with anonymous access verified. Genuine user feedback remains pending. No current deck is generated: Felo needs an API key. Deployment awaits Vercel login; instructions have been provided.
+**Checkpoint:** 57 unit tests, local desktop/mobile core, five race checks, desktop PDF/DOCX/TXT upload and real Groq passed; local mobile TXT through curated plan/download passed. **Production https://gomycode-2026.vercel.app: 38/38 PASS**, **2026-09-27, 10:25:42–10:26:00 UTC**, `artifacts/deployed-results.json`; scoped below. Source and exactly 90-second captioned video have verified anonymous access. Mobile PDF/DOCX, physical phones and genuine user feedback remain unverified. **Outline only: final Felo presentation export is blocked by missing `FELO_API_KEY`.**
 
 ## Design direction
 
@@ -81,8 +81,8 @@ This outline replaces the older decks, which are **obsolete**. It is presentatio
 | TF-IDF historical retrieval | Titles, activities, deliverables |
 | Fixed resources and practice keys | Complete curated fallback |
 
-> **Groq live-tested: `openai/gpt-oss-20b` · four-week plan · 2.27 s**
-> Main workflow, 2026-09-27 · one observed run, not a benchmark.
+> **Production Groq: `mode=groq` · `openai/gpt-oss-20b` · four weeks · 1.831 s**
+> 2026-09-27, 10:25:42–10:26:00 UTC run · one remote request, not a benchmark.
 
 **Visual:** browser → FastAPI → deterministic analysis/curated plan, with a separate optional Groq branch. Label that branch **Server-checked opt-in · structured curriculum only · no CV, identities or demand statistics**.
 
@@ -95,15 +95,15 @@ This outline replaces the older decks, which are **obsolete**. It is presentatio
 - **17 / 20** exact skill sets on developer-authored synthetic examples.
 - **0.9535 precision · 0.9762 recall** on that extraction check.
 - **57 unittest methods passing**, reported by main workflow on 2026-09-27.
-- Current desktop **1440×1100** / mobile **390×844** core checks and all **5** race checks passed.
-- Desktop PDF/DOCX/TXT upload and real Groq passed; captioned demo published.
-- Dedicated mobile TXT upload → curated plan → download passed (**390×844, touch=True**).
+- Local desktop/mobile core, all **5** race checks and PDF/DOCX/TXT uploads passed.
+- **38 production checks passed:** PDF → Kenya gap → curated/Groq plan → SQL **3/3** → report.
+- Fresh production mobile **390×844** TXT → gap passed, no overflow.
 
-**Visual:** compact evidence card beside the current mobile TXT plan screenshot, local `artifacts/mobile-upload-plan.png`.
+**Visual:** compact evidence card with production captures `artifacts/public-ai.png`, `artifacts/public-practice.png` and `artifacts/public-mobile.png`.
 
-**Speaker cue:** The synthetic extraction set is not broad CV validation or a fairness audit. Its 0.97 ms warm median and zero inference calls/cost exclude parsing, startup, browser work, retrieval and generation. Current-build core Chromium checks recorded no JavaScript errors or external page requests. The dedicated mobile TXT check passed actual upload with consent, preview, extraction, Kenya 39.6% analysis, four curated weeks and Markdown download, with zero model calls/JavaScript errors and no horizontal overflow at analysis. This is touch-enabled Chromium emulation, not mobile PDF/DOCX or physical-phone verification. Groq's 2.27 seconds is one observed live-plan latency, not a benchmark; hosted cost is unmeasured.
+**Speaker cue:** Production used fresh anonymous Chromium contexts and synthetic inputs, with no mocked responses: desktop actual PDF, preview editing, upload/extraction consent gates, Kenya **391 / 39.6%**, four curated weeks with AI unchecked, one opted-in Groq plan, SQL **3/3** and report download. Fresh touch-mobile TXT through reviewed extraction/gap passed without overflow. Observed JavaScript/console errors, failed requests and HTTP 403s: **zero**. Production DOCX, near-limit uploads, provider-failure fallback, mobile plan/download and physical phones were not covered. Local mobile TXT separately passed curated plan/download. The synthetic extraction check is not broad CV validation or a fairness audit; its timing/cost exclude parsing and generation. Production **1.831 s** and earlier **2.27 s** Groq results are separate observations, not benchmarks; hosted cost is unmeasured.
 
-**Evidence/reproduction:** local `artifacts/mobile-upload-results.json` and `artifacts/mobile-upload-plan.png`; with the local server running and Playwright installed, run `.\.venv\Scripts\python.exe scripts/mobile_upload_test.py` from the project root. See [LOCAL_TEST_RESULTS.md](LOCAL_TEST_RESULTS.md). `artifacts/` is Git-ignored; selected JSON evidence is planned for the [demo-v1 release](https://github.com/Eeshan-Vaghjiani/njia/releases/tag/demo-v1), where only attached assets are publicly downloadable.
+**Evidence:** `artifacts/deployed-results.json`, exact UTC window **2026-09-27T10:25:42.307Z–2026-09-27T10:26:00.536Z**; see [LOCAL_TEST_RESULTS.md](LOCAL_TEST_RESULTS.md) for local reproduction. `artifacts/` paths are local and Git-ignored. The main workflow is publishing JSON evidence and screenshots to the existing [demo-v1 release](https://github.com/Eeshan-Vaghjiani/njia/releases/tag/demo-v1); only attached assets are publicly downloadable.
 
 ## Slide 7 — Keep the learner in control
 
@@ -129,12 +129,13 @@ This outline replaces the older decks, which are **obsolete**. It is presentatio
 > Partner applications: **Brightest · Click Mobile · Artefact · Thunders**
 >
 > https://github.com/Eeshan-Vaghjiani/njia
+> https://gomycode-2026.vercel.app
 > **[FINAL_PRESENTATION_URL]**
 > https://github.com/Eeshan-Vaghjiani/njia/releases/download/demo-v1/njia-demo-90s.webm
 
 **Visual:** one strong current learning-plan deliverable, with readable links or QR codes generated only from the verified final URLs.
 
-**Speaker cue:** Ask whether the plan helps a Kenyan learner choose and complete a useful next task. Award selections are recommendations, not guarantees. Source and video anonymous access are verified. Optional app link: **[FINAL_LIVE_APP_URL — PENDING VERCEL AUTHENTICATION]**. Felo export is blocked by a missing key; no current presentation is generated.
+**Speaker cue:** Ask whether the plan helps a Kenyan learner choose and complete a useful next task. Award selections are recommendations, not guarantees. Source and video anonymous access are verified. **https://gomycode-2026.vercel.app** passed the scoped **38 production checks**. CLI source deployment works under `eeshans-projects-0934fb87/gomycode-2026`; GitHub autodeploy is not connected. Final presentation export remains blocked by missing `FELO_API_KEY`; only this outline is ready.
 
 ## Required 90-second demo video
 

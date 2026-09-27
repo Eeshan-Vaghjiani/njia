@@ -1,10 +1,97 @@
 # Deploy Njia
 
-## Recommended path: Render Free, Docker
+## Live deployment: Vercel
+
+**Live app: https://gomycode-2026.vercel.app**
+
+- **Project:** `eeshans-projects-0934fb87/gomycode-2026`.
+- **2026-09-27, reported by main workflow:** anonymous
+  `https://gomycode-2026.vercel.app/api/health` returned **HTTP 200**,
+  **18,371 postings**, and configured Groq model **`openai/gpt-oss-20b`**.
+- **CLI source deployment succeeded.** The automatic GitHub connection failed;
+  automatic deployment is not configured. Publish source updates using the CLI.
+- **Public browser verification PASS: 38/38 checks**, fresh anonymous Chromium
+  contexts, **2026-09-27T10:25:42.307Z–2026-09-27T10:26:00.536Z**.
+  `artifacts/deployed-results.json` records production PDF upload, preview editing,
+  consent-gated extraction, Kenya gap (**391 / 39.6%**), curated planning with AI
+  unchecked, one real Groq plan (**`mode=groq`, `openai/gpt-oss-20b`, four weeks,
+  1.831 s**), SQL **3/3** and report download. Fresh touch-mobile **390×844** TXT
+  upload through gap analysis passed without horizontal overflow. Zero JavaScript
+  errors, console errors, failed requests or HTTP 403s were observed. See
+  [LOCAL_TEST_RESULTS.md](LOCAL_TEST_RESULTS.md) for limits and prior local evidence.
+
+### Active Services configuration and resolved build issues
+
+Initial deployment encountered ambiguous service discovery. `vercel.json` now
+declares the service explicitly and sends all paths to it:
+
+```json
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "services": {
+    "njia": {
+      "root": ".",
+      "runtime": "python",
+      "framework": "fastapi",
+      "entrypoint": "njia.app:app"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": { "type": "service", "service": "njia" }
+    }
+  ]
+}
+```
+
+Vercel uses **`pyproject.toml`**, not `requirements.txt`, for this deployment's
+dependencies. Explicit pinned direct dependencies were required; the project
+declares Python `>=3.12,<3.14` and pins FastAPI `0.115.11`, Uvicorn `0.34.0`,
+HTTPX `0.28.1`, scikit-learn `1.6.1`, python-dotenv `1.1.1`, python-multipart
+`0.0.32`, and pypdf `6.19.0`. `[tool.vercel]` also identifies `njia.app:app`.
+Keep these dependencies current when changing runtime requirements.
+
+The initial `.vercelignore` allowlist dropped runtime files. It was replaced
+with explicit exclusions for secrets (`.env`, `.env.*`), `private`, `.venv`,
+Git/agent metadata, caches, development files, artifacts/decks and unused data.
+The application modules, static assets, public corpus and `pyproject.toml`
+remain available to the build. Keep secret values in Vercel's server environment.
+**`api/index.py` is a legacy adapter and is not used by Services.**
+
+### Configured server environment
+
+| Variable | Configuration |
+| --- | --- |
+| `GROQ_API_KEY` | Sensitive server-held value configured in Vercel; never copy its value into docs or browser code |
+| `NJIA_AI_PROVIDER` | `groq` |
+| `GROQ_MODEL` | `openai/gpt-oss-20b` |
+| `NJIA_PUBLIC_ORIGINS` | `https://gomycode-2026.vercel.app` |
+| `OPENBLAS_NUM_THREADS` | `1` |
+
+Remote coaching still requires explicit `use_ai`/`ai_consent`. Curated plans
+remain available without AI consent; the returned plan identifies the mode
+that actually ran.
+
+### Publish a source update
+
+From the linked repository root, check the account/project and deploy:
+
+```powershell
+vercel whoami
+vercel deploy --prod
+```
+
+Confirm the target is `eeshans-projects-0934fb87/gomycode-2026`, inspect the build
+result, then verify the production health URL and browser flows below. A GitHub
+push alone does not deploy this project while the GitHub connection is absent.
+
+## Alternative packaging: Render Free, Docker
 
 Use the repository-root `render.yaml` to create one **Free Docker web service**.
-It serves the frontend and API at one HTTPS origin, keeps the current 5 MiB CV
-upload capability, and avoids a serverless bundle-size dependency. No database,
+It serves the frontend and API at one HTTPS origin, supports the backend's 5 MiB
+upload limit (the frontend still caps files at 4,000,000 bytes), and avoids a
+serverless bundle-size dependency. No database,
 disk, model server, paid service, or API key is required. AI coaching defaults to
 the deterministic `offline` provider.
 
@@ -15,29 +102,30 @@ the corpus, running several country/role analyses, and previewing a PDF: the
 Docker limit test below has not yet run. Disk package size is not runtime RAM.
 One Uvicorn worker and one BLAS/OpenMP thread reduce memory and CPU contention.
 
-### Current blockers and verification status
+### Earlier alternative-packaging verification status
 
-- **Render:** no authenticated Render session/token is available. The owner must
-  sign in and connect the public `Eeshan-Vaghjiani/Njia` repository after the main
-  workflow publishes it. This packaging task did not create or publish a repo.
+- **Render:** no authenticated Render session/token was available at the packaging
+  checkpoint. To use this alternative, sign in and connect the now-public
+  `Eeshan-Vaghjiani/njia` repository. No Render deployment is claimed.
 - **Local Docker:** Docker 28.4.0 is installed, but `docker info` cannot connect
   to the `dockerDesktopLinuxEngine` named pipe. Start Docker Desktop's Linux
   engine to build/run the image and verify the 512 MB memory budget. Render can
   build remotely without local Docker.
-- **Vercel:** installed CLI 56.3.1 meets the documented minimum 48.1.8; the
-  previously checked authentication is invalid. The owner must run `vercel login`.
-  No authenticated platform build, bundle-size result, or live HTTPS test exists.
+- **Vercel:** installed CLI 56.3.1 meets the documented minimum 48.1.8. The earlier
+  authentication blocker is resolved; CLI source deployment and anonymous health
+  succeeded as recorded above. An actual deployed-bundle size is not recorded here.
 - GitHub authentication was reported valid for **Eeshan-Vaghjiani**; it does not
   authenticate Render or Vercel.
-- Packaging checks passed: configuration instance validation against the hosted
-  Render/Vercel schemas, Docker COPY source existence, Vercel ignore allowlist
-  cases, adapter import, health (18,371 postings), root/static responses,
+- Earlier packaging checks passed: configuration instance validation against the
+  hosted Render/Vercel schemas, Docker COPY source existence, then-current Vercel
+  ignore allowlist cases, adapter import, health (18,371 postings), root/static responses,
   same-origin HTTPS POST, cross-origin rejection, and a simulated trusted HTTPS
-  proxy. These are local Python checks, not a container or deployed-service test.
+  proxy. These are local Python checks, not a container or deployed-service test;
+  the old Vercel adapter/allowlist checks do not validate the current Services config.
 
 ### Publish with Render
 
-1. After the main workflow publishes the repository, sign in at
+1. Sign in at
    <https://dashboard.render.com/> and select **New > Blueprint**. Connect Njia
    and use the root `render.yaml`. The repository/branch are inferred from the
    Blueprint rather than hardcoded.
@@ -88,12 +176,14 @@ headers and preserves the public Host. For a directly exposed container, retain
 the Docker default (loopback only), or explicitly specify the actual proxy IPs.
 Do not fix an origin failure by disabling the application's origin check.
 
-Vercel runs the ASGI adapter itself, not the Docker command, so Uvicorn flags in
-the Dockerfile do not configure Vercel. Verify that the live runtime supplies
-the HTTPS scheme and original public Host. If same-origin POST still gets 403,
-the application owner must address trusted proxy/origin handling before release.
+Vercel Services runs `njia.app:app`, not the Docker command, so Uvicorn flags in
+the Dockerfile do not configure Vercel. The deployed server explicitly sets
+`NJIA_PUBLIC_ORIGINS=https://gomycode-2026.vercel.app`. Production same-origin
+HTTPS POST flows passed with zero HTTP 403s in the recorded run. Rejection of
+unrelated origins was not tested in that production run; local rejection checks
+remain separate evidence.
 
-## Vercel: viable candidate, subject to build and upload checks
+## Vercel limits and earlier size assessment
 
 ### Current requirements and limits (researched 2026-09-27)
 
@@ -101,22 +191,23 @@ the application owner must address trusted proxy/origin handling before release.
   bundle limit is now 500 MB**, not the generic 250 MB function limit.
 - Large Functions beta supports up to 5 GB with Fluid compute and Active CPU.
   New eligible projects may use this automatically for oversized functions.
-  This setup does not rely on that beta: set project environment variable
-  `VERCEL_SUPPORT_LARGE_FUNCTIONS=0` to test the standard-size deployment.
-- Supported Python versions are 3.12 (current default), 3.13, and 3.14. This
-  packaging assessment targets 3.12; confirm it in the build output. Dependencies
-  are read from the existing `requirements.txt`.
-- Hobby supports 2 GB memory and up to 300 seconds with Fluid compute; this
-  function requests 60 seconds. Hobby is free for personal, non-commercial use
+  The earlier assessment proposed `VERCEL_SUPPORT_LARGE_FUNCTIONS=0` to test
+  standard-size deployment; that variable is not in the confirmed live settings above.
+- Supported Python versions are 3.12 (current default), 3.13, and 3.14. The
+  earlier packaging assessment targeted 3.12. The current project declares
+  `>=3.12,<3.14`; verify the actual interpreter in build output. Vercel reads the
+  explicit pinned dependencies in `pyproject.toml` for the current deployment.
+- Hobby supports 2 GB memory and up to 300 seconds with Fluid compute; the
+  current Services configuration does not specify a duration override.
+  Hobby is free for personal, non-commercial use
   within quotas; do not select a Pro trial or paid team. Quota exhaustion can
   pause the service. Commercial use needs a different hosting/plan decision.
-- **Request and response payloads are limited to 4.5 MB.** Njia currently accepts
-  files up to `5 * 1024 * 1024` bytes plus multipart overhead. Those requests can
-  fail at Vercel with 413 before reaching the app. Before selecting Vercel, the
-  frontend owner should reduce the advertised and enforced file limit to
-  **4,000,000 bytes (4 MB)**, leaving multipart headroom; align backend validation
-  as appropriate. This packaging task did not change those limits. Render is
-  preferred if retaining the existing upload promise is required.
+- **Request and response payloads are limited to 4.5 MB.** The backend accepts
+  files up to `5 * 1024 * 1024` bytes (**5 MiB**) plus multipart overhead, but
+  the frontend now caps files at **4,000,000 bytes (4 MB)** for multipart
+  headroom. Larger direct requests can fail at Vercel with 413 before reaching
+  the app. Production synthetic desktop PDF and mobile TXT uploads passed;
+  near-limit uploads and production DOCX remain unverified.
 
 ### Size assessment
 
@@ -139,54 +230,25 @@ The wheel check used a restricted compatibility target; Vercel's newer Linux
 target and unpinned transitive dependencies may resolve different versions.
 It is an estimate, not a deployed-bundle measurement or an import test of Linux
 native extensions. Never use the Windows `.venv` size as the Linux bundle result.
-Inspect the actual build output before declaring Vercel supported.
-
-### Why the Vercel adapter and configuration exist
-
-Zero-config FastAPI discovery supports root `app.py`/`index.py`/`main.py` and
-similar files under `src/` or `app/`; the existing `njia.app:app` is outside those
-locations. The native custom-module setting is in `pyproject.toml`, which is
-outside this task's allowed files.
-
-`api/index.py` therefore exports the existing ASGI app using Vercel's documented
-file-based Python function support. `vercel.json` sets `framework: null` (Other)
-to prevent a FastAPI preset overriding this route, rewrites requests to that
-function, explicitly includes runtime files, and sets duration. This avoids
-legacy `builds` configuration. `.vercelignore` uploads only the adapter,
-requirements, application modules, three static files, and the public corpus.
-No model/CV/private data or development environment belongs in this upload.
-
-### Owner's Vercel steps
-
-1. Run `vercel login`, then `vercel whoami`. Select the owner's **Hobby** scope.
-2. Import/link the repository root with Framework **Other**. Leave build/install
-   overrides unset. Set `NJIA_AI_PROVIDER=offline` and
-   `VERCEL_SUPPORT_LARGE_FUNCTIONS=0`. Keep Fluid compute enabled.
-3. Build/preview only after authentication and scope selection. For a CLI
-   preflight, `vercel pull --environment=preview` followed by `vercel build`
-   retrieves settings and builds locally without publishing. Prefer a Linux
-   build environment for native NumPy/SciPy compatibility. Inspect generated
-   `.vercel/output/functions` and the builder's bundle report; compressed source
-   upload size is not the relevant limit.
-4. If the standard bundle fits, the upload limit has been resolved, and the
-   runtime checks pass, the main deployment workflow can publish with
-   `vercel deploy` for a preview, then `vercel deploy --prod` for production.
-   Stop on a size failure or paid-plan prompt rather than automatically upgrading.
-5. Verify the production URL is publicly accessible in a signed-out browser;
-   preview authentication can otherwise prevent judges from opening it.
+CLI source deployment has since succeeded; these figures remain the earlier
+wheel estimate, not a measurement of the deployed Services bundle.
 
 ## Live smoke checks for either host
 
-- `/` loads, and `/static/app.js` and `/static/styles.css` return successfully.
-- `/api/health` reports `ok`, **18,371** postings and the offline provider.
-- `/api/meta` supplies country, role, and skill choices.
-- Use the browser UI to extract skills, analyze a country/role, and create an
-  offline plan. This verifies HTTPS POST origin handling, unlike a bare health
-  request. Check that an unrelated Origin is rejected.
-- Preview a synthetic TXT/PDF/DOCX with consent; use non-sensitive sample text.
-  Check near-limit uploads against the selected host's actual request limit.
-- Confirm health still succeeds after exercising analysis and upload parsing,
-  and inspect memory/latency. Caches are per-process and are rebuilt on restart.
+**Vercel PASS:** homepage, static JS/CSS, sample TXT download, health and metadata;
+desktop PDF/edited preview/consent/extraction/analysis; four curated weeks with
+`use_ai=false` and `ai_consent=false`; one opted-in Groq response; SQL grading and
+report download; fresh mobile TXT/preview/extraction/analysis. All observed HTTP
+responses succeeded. The 1.831-second Groq result is one observation, not a benchmark.
+
+**Still unverified in production:** DOCX, near-limit uploads, unrelated-Origin
+rejection, provider-failure fallback, mobile plan/download and physical phones;
+post-flow health and runtime memory were not measured by this run. Prior local
+tests cover some of these paths separately. No Render smoke run is claimed.
+
+The main workflow is publishing `deployed-results.json` and production screenshots
+to the existing [demo-v1 release](https://github.com/Eeshan-Vaghjiani/njia/releases/tag/demo-v1).
+Only attached assets are publicly downloadable; `artifacts/` paths are local.
 
 ## Packaging boundary
 

@@ -1,0 +1,16 @@
+[project]
+name = "njia"
+version = "1.1.0"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+  "fastapi==0.115.11",
+  "uvicorn==0.34.0",
+  "httpx==0.28.1",
+  "scikit-learn==1.6.1",
+  "python-dotenv==1.1.1",
+  "python-multipart==0.0.32",
+  "pypdf==6.19.0",
+]
+
+[tool.vercel]
+entrypoint = "njia.app:app"

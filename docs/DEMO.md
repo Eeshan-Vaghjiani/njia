@@ -1,6 +1,6 @@
 # Njia: 90-second demo
 
-**2026-09-27 completed evidence, supplied by main workflow:** 57 unit tests pass. Actual desktop browser PDF/DOCX/TXT upload → editable preview → extraction → analysis passed, along with invalid-file, oversize, scanned-PDF and consent-error handling. Real Groq coaching passed in-browser with `openai/gpt-oss-20b`; a separate live observation returned four weeks in 2.27 seconds. Public repository creation/access is verified: https://github.com/Eeshan-Vaghjiani/njia. Vercel remains unauthenticated, with no completed deployment. Felo export remains blocked by a missing key; older decks do not represent current capabilities.
+**2026-09-27 evidence:** 57 unit tests and local desktop PDF/DOCX/TXT upload/error checks passed. Source access verified: https://github.com/Eeshan-Vaghjiani/njia. **Live app: https://gomycode-2026.vercel.app — 38/38 production browser checks PASS**, **10:25:42–10:26:00 UTC** (`artifacts/deployed-results.json`); health **HTTP 200**, **18,371 postings**. Final presentation remains outline-only, blocked by missing `FELO_API_KEY`; older decks are obsolete.
 
 ## Completed video
 
@@ -14,12 +14,12 @@ The walkthrough below is a presenter/rehearsal guide. The completed WebM is the 
 
 ## Before the timer
 
-1. Follow the [README setup](../README.md#run-locally), then run `start.ps1` from the project root. Open **http://127.0.0.1:8000**.
+1. For a public-app rehearsal, open **https://gomycode-2026.vercel.app**; the scoped production browser checks passed. To reproduce the recorded local demo, follow the [README setup](../README.md#run-locally), then run `start.ps1` from the project root and open **http://127.0.0.1:8000**.
 2. Check the configured provider and actual returned plan mode. The default is `NJIA_AI_PROVIDER=offline` unless configured. For hosted coaching, main workflow configures Groq with a server-held key and `openai/gpt-oss-20b`; explicitly opt in before generation. Curated plans are available without AI consent. Ollama remains mock-tested only.
 3. Use **Reset this session** for a clean start. Keep the browser's download location accessible for the Markdown report. Use a synthetic PDF/DOCX/TXT or the built-in synthetic profile, not a real CV. The backend accepts up to 5 MiB; the frontend caps files at 4,000,000 bytes to leave room under Vercel's request limit.
 4. Rehearse the clicks below. Current desktop upload, real Groq and core desktop/mobile checks passed; all five race checks passed. Dedicated mobile TXT upload also passed at 390×844 with touch emulation; mobile PDF/DOCX and physical-phone upload remain unverified.
 
-The completed video demonstrates the local actual app; no public deployment or native app is claimed.
+The completed video demonstrates the local actual app. Separate production evidence verifies desktop PDF upload → edited preview → consent/extraction → Kenya **391 / 39.6%**, four curated weeks with AI unchecked, one real opted-in **`mode=groq`, `openai/gpt-oss-20b`** plan (**four weeks, 1.831 s**), SQL **3/3** and report download. Fresh anonymous touch-mobile **390×844** TXT upload through gap analysis passed without overflow. Zero JavaScript/console errors, failed requests or HTTP 403s were observed. Production DOCX, near-limit uploads, mobile plan/download and physical phones were not tested in this run. Njia is a browser prototype.
 
 ## Timed walkthrough
 
@@ -60,6 +60,6 @@ The completed video demonstrates the local actual app; no public deployment or n
 - **Privacy:** no application-level raw CV persistence; basic redaction is not comprehensive anonymization. On a public app, document/text processing takes place on the hosting server, not the user's laptop. Groq receives only allowlisted structured curriculum, not CV text, identities, country/role or demand statistics. Exported reports contain self-reported skills and any submitted reflection.
 - **Earlier materials:** `GAME_PLAN.md`, `STRATEGY.md`, and existing decks are not current capability evidence. Use this script and the updated presentation outline.
 
-To reproduce the mobile TXT check with the local server running and Playwright installed, run `.\.venv\Scripts\python.exe scripts/mobile_upload_test.py` from the project root. See [local test results](LOCAL_TEST_RESULTS.md). `artifacts/` is Git-ignored; these are local paths. Selected JSON evidence is planned for the [demo-v1 release](https://github.com/Eeshan-Vaghjiani/njia/releases/tag/demo-v1); only attached assets are publicly downloadable.
+To reproduce the local mobile TXT check with the server running and Playwright installed, run `.\.venv\Scripts\python.exe scripts/mobile_upload_test.py` from the project root. See [test results](LOCAL_TEST_RESULTS.md) for exact production timestamps and captures. The earlier 2.27-second and production 1.831-second Groq observations are separate runs, not benchmarks. `artifacts/` paths are local and Git-ignored. The main workflow is publishing JSON evidence and screenshots to the existing [demo-v1 release](https://github.com/Eeshan-Vaghjiani/njia/releases/tag/demo-v1); only attached assets are publicly downloadable. Vercel CLI deployment works; GitHub autodeploy is not connected.
 
 If the local engine does not load, check the server terminal and refresh. If extraction is unsuitable, choose skills manually. Curated planning provides a complete path without model availability or AI consent.
