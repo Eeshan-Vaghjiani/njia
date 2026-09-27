@@ -159,16 +159,17 @@ def main():
             at(21, "QUICK QUESTIONS, SHARPER ADVICE", f"{len(questions['questions'])} questions ({questions.get('model') or 'curated'}) in {q_elapsed:.1f}s. The fictional candidate answers truthfully.")
             result["answered"] = answer_questions(page, questions["questions"])
 
-            at(29, "YOUR ANSWERS GO INTO THE BRIEF", "Build my brief with these answers sends the CV and answers to Groq. Stats are computed separately.")
+            at(29, "YOUR ANSWERS GO INTO THE BRIEF", "Build my brief with these answers sends the CV and answers to the AI provider. Stats are computed separately.")
             data, elapsed = click_api(page, "#followup-submit", "/api/advise", timeout=90000)
             a, m = data["advisor"], data["market"]
             result.update(response=data, elapsed_seconds=elapsed)
-            check("actual_groq_advisor", a["mode"] == "groq", {"model": a["model"], "elapsed_seconds": elapsed})
+            check("actual_groq_advisor", a["mode"] in {"groq", "nvidia"}, {"mode": a["mode"], "model": a["model"], "elapsed_seconds": elapsed})
             check("answers_reached_brief", "answers_used" in a, a.get("answers_used"))
             expect(page.locator("#ai-provenance")).to_contain_text(a["model"] or "none")
             check("seven_day_plan", len(a["seven_day_plan"]) == 7)
             frame(page, "#results", 25)
-            at(37, "LIVE RESULT / SHAPED BY YOUR ANSWERS", f"Returned by {a['model']} in {elapsed:.1f}s. The brief notes which answers changed the skill profile.")
+            provider = {"groq": "Groq", "nvidia": "NVIDIA's API (Groq backup)"}.get(a["mode"], a["mode"])
+            at(37, "LIVE RESULT / SHAPED BY YOUR ANSWERS", f"Returned by {a['model']} via {provider} in {elapsed:.1f}s. The brief notes which answers changed the skills.")
 
             at(43, "03 / LIVE JOBS YOU CAN APPLY FOR", "Current remote postings open to applicants in Kenya, plus local postings found by web search with verified links.")
             frame(page, "#live-jobs-section", 25)
