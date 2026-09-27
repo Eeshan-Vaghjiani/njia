@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=https://render.com/schema/render.yaml.json
+services:
+  - type: web
+    name: njia
+    runtime: docker
+    plan: free
+    region: frankfurt
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health
+    autoDeployTrigger: 'off'
+    envVars:
+      - key: NJIA_AI_PROVIDER
+        value: offline
+      # Render terminates HTTPS and proxies to Uvicorn over HTTP.
+      # Trust all peers only behind this managed ingress; see DEPLOYMENT.md.
+      - key: FORWARDED_ALLOW_IPS
+        value: '*'

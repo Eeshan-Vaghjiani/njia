@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#153f35">
+  <meta name="description" content="Find your next career step with job-market evidence. No CV storage. CV never sent to AI.">
+  <title>Njia — Your skills. Your next step.</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='12' fill='%23153f35'/%3E%3Cpath d='M11 28V12l18 16V12' fill='none' stroke='%23dcf0a0' stroke-width='4'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="Njia home"><span class="brand-icon">n<span>↗</span></span>njia<span class="brand-dot">.</span></a>
+    <span class="brand-tag">A clearer path to what’s next.</span>
+    <div class="header-actions"><span class="local-pill"><i aria-hidden="true"></i> No CV storage</span><button class="text-button" id="about-button">How it works <span>↗</span></button></div>
+  </header>
+  <main>
+    <section class="intro">
+      <div><div class="eyebrow"><span class="small-line"></span> YOUR NEXT CHAPTER STARTS HERE</div><h1>Your skills.<br>Your market. <em>Your path.</em></h1><p>Discover what employers ask for in your country.<br>Turn the skills you have into a plan for the ones you need.</p></div>
+      <div class="intro-note"><span class="note-star">✳</span><span>Less guesswork.<br><strong>More direction.</strong></span><p>Built on real job postings.<br>Made for your next step.</p></div>
+    </section>
+    <section class="dataset-strip" aria-label="Dataset overview"><div><strong id="posting-count">18,371</strong><span>historical job postings</span></div><div><strong>10</strong><span>African & MENA countries</span></div><div><strong>2023</strong><span>dataset · tech & data roles</span></div><a href="#evidence" id="source-jump">Evidence, not guesswork <span>↗</span></a></section>
+    <div class="workspace">
+      <aside class="profile-card">
+        <div class="section-kicker">01 / YOUR STARTING POINT</div><h2>Let’s map your skills.</h2><p class="muted">A little about you. A clearer way forward.</p>
+        <label for="country">Your job market</label><select id="country" disabled><option>Loading countries…</option></select>
+        <label for="role">Your target role</label><select id="role" disabled><option>Loading roles…</option></select>
+        <section class="upload-card" aria-labelledby="upload-heading">
+          <h3 id="upload-heading">Start with your CV</h3>
+          <p class="hint" id="upload-help">PDF, DOCX or UTF-8 TXT · max 4 MB (4,000,000 bytes). Upload to preview, then review the text and find your skills.</p>
+          <label for="cv-file">Choose a CV file</label>
+          <input id="cv-file" type="file" accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" aria-describedby="upload-help upload-status">
+          <label class="check-label"><input id="upload-consent" type="checkbox"><span>I agree to process this file in server memory to create a text preview.</span></label>
+          <button id="upload" class="secondary-button full" disabled>Upload & preview text <span aria-hidden="true">↑</span></button>
+          <div id="upload-status" class="upload-status hint" role="status" aria-live="polite" aria-atomic="true" hidden></div>
+          <a class="sample-download" href="/static/sample-cv.txt" download>Download a synthetic sample CV (.txt) ↓</a>
+        </section>
+        <div class="label-row"><label for="cv">Paste or review your CV text</label><button id="sample" class="text-button small" disabled>Try an example ↗</button></div>
+        <textarea id="cv" maxlength="15000" rows="6" aria-describedby="cv-privacy extraction-note" placeholder="Paste your CV or tell us what you’ve worked with. For example: I use SQL and Excel to analyze sales data…"></textarea>
+        <div class="privacy-note" id="cv-privacy"><span aria-hidden="true">♧</span><span>No CV storage. Files and text are processed in server memory. CV never sent to AI. <button id="clear-text" class="inline-button">Clear text</button></span></div>
+        <label class="check-label"><input id="consent" type="checkbox"><span>I have reviewed the text and agree to server processing to find my skills.</span></label>
+        <button class="secondary-button full" id="extract" disabled>Find my skills <span>✧</span></button>
+        <div id="extraction-note" class="hint" aria-live="polite">You can also choose skills manually below.</div>
+        <div class="label-row"><label for="skill-select">Review your skills <span id="skill-count" class="count">0</span></label><span class="hint">You’re in control</span></div>
+        <div id="skill-chips" class="chips"><span class="empty-chip">Your confirmed skills will appear here</span></div>
+        <div class="add-skill"><select id="skill-select" aria-label="Skill to add" disabled><option>Add a skill…</option></select><button id="add-skill" class="icon-button" aria-label="Add selected skill" disabled>+</button></div>
+        <button id="analyze" class="primary-button full" disabled>Find my path <span>→</span></button>
+        <p class="hint centered">No skills yet? Start from zero. Every path starts somewhere.</p>
+        <div class="mode-note" id="mode-note">Connecting to Njia…</div>
+      </aside>
+      <section class="results-area" aria-label="Your career path">
+        <nav class="tabs" aria-label="Result sections"><button data-tab="overview" class="tab active" aria-selected="true">Your skill gap</button><button data-tab="plan" class="tab" aria-selected="false">Learning path</button><button data-tab="practice" class="tab" aria-selected="false">Practice & evidence</button></nav>
+        <div id="status" role="status" aria-live="polite" hidden></div>
+        <div id="welcome" class="welcome-card">
+          <div class="path-art" aria-hidden="true"><span class="art-dot start">01</span><span class="art-path"></span><span class="art-dot finish">↗</span><span class="art-leaf">✳</span></div>
+          <span class="section-kicker">BIG AMBITIONS. SMALL, CLEAR STEPS.</span><h2>Your next move,<br>grounded in real demand.</h2><p>Choose your market, add your skills, and find out<br>where a little learning can make a difference.</p><button class="text-button" id="welcome-sample">Explore with a sample profile <span>→</span></button>
+          <div class="welcome-steps"><div><span>01</span> Know your gap</div><div><span>02</span> Make a plan</div><div><span>03</span> Practice your skills</div></div>
+        </div>
+        <div id="overview" class="tab-panel" hidden></div>
+        <div id="plan" class="tab-panel" hidden></div>
+        <div id="practice" class="tab-panel" hidden></div>
+        <div class="evidence-note" id="evidence"><span>◈</span><p><strong>A little context matters.</strong> Recommendations use 2023 postings, not today’s live vacancies. Smaller country-role samples use the combined 10-country dataset. Skill coverage describes demand, not your likelihood of getting hired.</p></div>
+      </section>
+    </div>
+    <section class="bottom-note"><span class="brand mini">njia.</span><p><strong>Njia means “path” in Swahili.</strong><br>We help you see yours, one skill at a time.</p><span>BUILT FOR POSSIBILITY.<br>GROUNDED IN EVIDENCE.</span></section>
+  </main>
+  <footer><span>Njia · GOMYCODE Come Build with AI · 2026</span><button class="inline-button" id="reset">Reset this session</button><span>No Brev credits required.</span></footer>
+  <dialog id="about" aria-labelledby="about-title"><button class="dialog-close icon-button" id="close-about" aria-label="Close">×</button><div class="section-kicker">UNDER THE HOOD</div><h2 id="about-title">Evidence first.<br>Clear about the AI.</h2><p><strong>1. Confirm your skills.</strong> Upload a PDF, DOCX or TXT (up to 4,000,000 bytes) with consent, or paste text. Review the preview before finding skills. Server-side keyword matching recognizes dataset skills and common aliases; it can miss context, so you confirm the result.</p><p><strong>2. Understand local demand.</strong> We count the top 15 skills for your role and market. Below 50 local postings, we use the 10-country sample and show that explicitly.</p><p><strong>3. Make a plan.</strong> Curated exercises and resources are always available. A configured Ollama or Groq model can rewrite the coaching. Remote AI requires a separate opt-in to send only structured skill and curriculum data, never your CV. Leave it unchecked for a curated plan. The result labels which method actually ran.</p><p><strong>4. Practice.</strong> Three fixed questions use an answer key. A reflection is for self-review, not automatically graded or certified.</p><p><strong>Job retrieval:</strong> TF-IDF and cosine similarity find historical examples related to your skills. This is classical information retrieval, not a generative model.</p><p><strong>Privacy:</strong> No CV storage. Uploaded files and pasted text are processed in server memory, including on a public deployment. CV never sent to AI. Basic email, phone, link, and labelled identity redaction is best-effort; review the preview. No database, analytics, or browser persistence. Your preview and session results stay in page memory until cleared or the page is closed. Reset clears the selected file too.</p><p><strong>API:</strong> <code>POST /api/upload</code> accepts multipart <code>file</code> and <code>consent=true</code>, returning text, filename and a processing note. <code>POST /api/plan</code> accepts <code>use_ai</code> (default true) and <code>ai_consent</code> (default false). This interface sends <code>use_ai: false</code> for remote AI without opt-in. <a href="/docs" target="_blank" rel="noreferrer">Explore the API documentation ↗</a></p><p class="hint">Data: <a href="https://huggingface.co/datasets/lukebarousse/data_jobs" target="_blank" rel="noreferrer">lukebarousse/data_jobs</a>, 2023, Apache-2.0 according to the prepared dataset documentation. Tech/data roles only; postings are not representative of all employers or workers.</p></dialog>
+</body>
+</html>

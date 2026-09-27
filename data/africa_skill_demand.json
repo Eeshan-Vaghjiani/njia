@@ -1,0 +1,247 @@
+{
+ "source": "lukebarousse/data_jobs (Hugging Face, Apache-2.0), 2023 job postings",
+ "countries": {
+  "Algeria": {
+   "postings": 75,
+   "no_degree_pct": 33.3
+  },
+  "Côte d'Ivoire": {
+   "postings": 36,
+   "no_degree_pct": 19.4
+  },
+  "Egypt": {
+   "postings": 2155,
+   "no_degree_pct": 24.7
+  },
+  "Kenya": {
+   "postings": 1326,
+   "no_degree_pct": 14.3
+  },
+  "Morocco": {
+   "postings": 976,
+   "no_degree_pct": 21.3
+  },
+  "Nigeria": {
+   "postings": 858,
+   "no_degree_pct": 15.0
+  },
+  "Saudi Arabia": {
+   "postings": 2011,
+   "no_degree_pct": 21.3
+  },
+  "Senegal": {
+   "postings": 88,
+   "no_degree_pct": 11.4
+  },
+  "South Africa": {
+   "postings": 10363,
+   "no_degree_pct": 24.7
+  },
+  "Tunisia": {
+   "postings": 483,
+   "no_degree_pct": 22.4
+  }
+ },
+ "roles": {
+  "Business Analyst": {
+   "postings": 1441,
+   "top_skills_pct": {
+    "sql": 43.5,
+    "excel": 42.2,
+    "power bi": 27.0,
+    "tableau": 17.1,
+    "python": 16.7,
+    "word": 12.4,
+    "sas": 12.4,
+    "r": 11.5,
+    "powerpoint": 11.0,
+    "sap": 9.6,
+    "flow": 8.3,
+    "sql server": 7.3,
+    "azure": 5.6,
+    "ssrs": 5.4,
+    "ssis": 5.2
+   }
+  },
+  "Cloud Engineer": {
+   "postings": 410,
+   "top_skills_pct": {
+    "aws": 33.9,
+    "azure": 31.0,
+    "python": 26.6,
+    "sql": 24.1,
+    "linux": 22.4,
+    "windows": 16.6,
+    "java": 16.1,
+    "terraform": 13.4,
+    "kubernetes": 12.7,
+    "gcp": 11.2,
+    "docker": 10.5,
+    "c#": 10.5,
+    "javascript": 9.0,
+    "go": 8.8,
+    "powershell": 7.8
+   }
+  },
+  "Data Analyst": {
+   "postings": 3915,
+   "top_skills_pct": {
+    "sql": 58.6,
+    "excel": 43.2,
+    "python": 35.6,
+    "power bi": 27.3,
+    "tableau": 24.0,
+    "r": 22.9,
+    "sas": 19.4,
+    "azure": 8.0,
+    "word": 7.8,
+    "sap": 7.7,
+    "powerpoint": 7.7,
+    "aws": 7.1,
+    "spss": 6.1,
+    "sql server": 5.8,
+    "flow": 5.5
+   }
+  },
+  "Data Engineer": {
+   "postings": 4554,
+   "top_skills_pct": {
+    "sql": 68.7,
+    "python": 54.9,
+    "aws": 37.9,
+    "azure": 33.2,
+    "spark": 28.0,
+    "java": 19.5,
+    "hadoop": 18.9,
+    "kafka": 17.6,
+    "scala": 14.7,
+    "ssis": 14.1,
+    "power bi": 13.9,
+    "nosql": 12.4,
+    "r": 12.1,
+    "sql server": 11.7,
+    "mongodb": 11.5
+   }
+  },
+  "Data Scientist": {
+   "postings": 3514,
+   "top_skills_pct": {
+    "python": 70.5,
+    "sql": 56.7,
+    "r": 43.5,
+    "sas": 33.2,
+    "tableau": 21.8,
+    "spark": 17.7,
+    "excel": 16.9,
+    "power bi": 15.3,
+    "hadoop": 15.0,
+    "java": 14.9,
+    "azure": 13.7,
+    "aws": 13.1,
+    "tensorflow": 8.8,
+    "c++": 8.2,
+    "pytorch": 7.5
+   }
+  },
+  "Machine Learning Engineer": {
+   "postings": 386,
+   "top_skills_pct": {
+    "python": 71.0,
+    "pytorch": 39.9,
+    "tensorflow": 39.9,
+    "aws": 37.6,
+    "sql": 30.3,
+    "java": 28.2,
+    "azure": 27.2,
+    "kubernetes": 26.4,
+    "spark": 24.6,
+    "docker": 24.4,
+    "scikit-learn": 23.3,
+    "sas": 19.2,
+    "r": 18.7,
+    "keras": 18.7,
+    "gcp": 15.3
+   }
+  },
+  "Senior Data Analyst": {
+   "postings": 518,
+   "top_skills_pct": {
+    "sql": 66.0,
+    "python": 39.6,
+    "excel": 32.0,
+    "tableau": 29.0,
+    "sas": 27.0,
+    "power bi": 26.1,
+    "r": 24.7,
+    "azure": 9.8,
+    "aws": 9.5,
+    "spark": 8.7,
+    "powerpoint": 8.5,
+    "hadoop": 8.5,
+    "word": 7.9,
+    "sql server": 6.9,
+    "spss": 5.8
+   }
+  },
+  "Senior Data Engineer": {
+   "postings": 1142,
+   "top_skills_pct": {
+    "sql": 70.8,
+    "python": 56.7,
+    "azure": 41.6,
+    "aws": 40.1,
+    "spark": 33.7,
+    "kafka": 22.2,
+    "ssis": 20.8,
+    "hadoop": 20.4,
+    "java": 20.1,
+    "scala": 18.2,
+    "sql server": 16.5,
+    "power bi": 15.4,
+    "nosql": 14.2,
+    "databricks": 12.9,
+    "mongodb": 12.3
+   }
+  },
+  "Senior Data Scientist": {
+   "postings": 783,
+   "top_skills_pct": {
+    "python": 72.2,
+    "sql": 62.6,
+    "r": 41.4,
+    "sas": 30.4,
+    "spark": 23.5,
+    "tableau": 21.2,
+    "hadoop": 20.6,
+    "azure": 16.7,
+    "java": 14.0,
+    "aws": 13.4,
+    "power bi": 12.6,
+    "tensorflow": 12.3,
+    "excel": 10.7,
+    "pytorch": 10.3,
+    "scikit-learn": 10.2
+   }
+  },
+  "Software Engineer": {
+   "postings": 1708,
+   "top_skills_pct": {
+    "python": 35.4,
+    "sql": 34.6,
+    "aws": 27.4,
+    "java": 23.4,
+    "azure": 21.4,
+    "javascript": 18.8,
+    "kubernetes": 15.6,
+    "docker": 14.3,
+    "c#": 13.7,
+    "linux": 13.6,
+    "react": 12.5,
+    "git": 11.9,
+    "angular": 10.8,
+    "mongodb": 9.8,
+    "gcp": 9.1
+   }
+  }
+ }
+}

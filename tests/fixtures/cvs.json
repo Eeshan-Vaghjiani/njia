@@ -1,0 +1,22 @@
+[
+  {"id":"01-basic","text":"I use SQL and Excel to produce weekly sales reports.","skills":["sql","excel"]},
+  {"id":"02-aliases","text":"Skills: PowerBI, PostgreSQL and k8s.","skills":["power bi","postgresql","kubernetes"]},
+  {"id":"03-python","text":"I analyze survey data with Python, pandas and NumPy.","skills":["python","pandas","numpy"]},
+  {"id":"04-r","text":"I use R and ggplot2 to visualize public health data.","skills":["r","ggplot2"]},
+  {"id":"05-cloud","text":"My stack includes Amazon Web Services, Docker and Terraform.","skills":["aws","docker","terraform"]},
+  {"id":"06-french","text":"Compétences: Python, SQL et Tableau. Analyse des ventes mensuelles.","skills":["python","sql","tableau"]},
+  {"id":"07-swahili","text":"Ninatumia Excel na SQL kufanya uchambuzi wa mauzo kila mwezi.","skills":["excel","sql"]},
+  {"id":"08-negation","text":"I use Excel. I have no experience with Python or Tableau.","skills":["excel"]},
+  {"id":"09-learning","text":"I know SQL. I want to learn Python and R.","skills":["sql"]},
+  {"id":"10-boundaries","text":"Skills: C++, C# and JavaScript. Building desktop and web apps.","skills":["c++","c#","javascript"]},
+  {"id":"11-no-skills","text":"I manage customers and coordinate meetings at a local shop.","skills":[]},
+  {"id":"12-empty-meaning","text":"I am looking for my first role after finishing school.","skills":[]},
+  {"id":"13-ml","text":"I train models using PyTorch, TensorFlow and scikit learn.","skills":["pytorch","tensorflow","scikit-learn"]},
+  {"id":"14-engineer","text":"I build pipelines with Kafka, Spark and Hadoop.","skills":["kafka","spark","hadoop"]},
+  {"id":"15-pii","text":"Name: Example Person\nEmail: sample@example.com\nPhone: +254 712 345 678\nSkills: SQL, Excel","skills":["sql","excel"]},
+  {"id":"16-linux","text":"Skills: Linux, Bash, Git and GitHub. I maintain internal tools.","skills":["linux","bash","git","github"]},
+  {"id":"17-case","text":"Skills: PYTHON, excel, power-bi, SQL.","skills":["python","excel","power bi","sql"]},
+  {"id":"18-ambiguous-verb","text":"I excel at communication and go to customer meetings.","skills":[]},
+  {"id":"19-implied","text":"I built pivot tables and lookup formulas in Microsoft's spreadsheet application for a shop.","skills":["excel","spreadsheet"]},
+  {"id":"20-context","text":"I used Python before, but I am not comfortable with it anymore. I use SQL daily.","skills":["sql"]}
+]

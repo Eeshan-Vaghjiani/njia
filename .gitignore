@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+.vercel/
+private/
+artifacts/
+node_modules/
+data/data_jobs.csv

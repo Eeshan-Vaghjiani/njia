@@ -1,0 +1,21 @@
+# Upload only the application's public runtime inputs and deployment adapter.
+*
+!requirements.txt
+!vercel.json
+!.vercelignore
+!api/
+!api/index.py
+!njia/
+!njia/__init__.py
+!njia/app.py
+!njia/assessment.py
+!njia/coaching.py
+!njia/engine.py
+!njia/uploads.py
+!static/
+!static/index.html
+!static/app.js
+!static/styles.css
+!static/sample-cv.txt
+!data/
+!data/africa_jobs_subset.jsonl

@@ -1,0 +1,16 @@
+SYNTHETIC SAMPLE CV - FOR DEMONSTRATION ONLY
+
+Target role: Data Analyst
+Target market: Kenya
+
+Profile
+An aspiring data analyst who turns sales records into clear monthly reports.
+This fictional profile contains no real identity or contact information.
+
+Experience and projects
+- Used SQL to filter, group and join sample sales records.
+- Built Excel pivot tables to summarize monthly revenue.
+- Created Power BI dashboards to explain product performance.
+
+Learning goals
+I want to learn Python and R for data analysis.
