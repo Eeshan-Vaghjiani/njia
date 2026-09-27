@@ -6,14 +6,14 @@
 
 This outline replaces the older decks, which are **obsolete**. It is presentation copy and direction, not a generated or hosted deck. The required **90-second demo video is a separate deliverable**; no official slide count or separate presentation duration is specified.
 
-**Checkpoint:** outline ready; real Felo presentation export is blocked by a missing API key. Demo recording and fresh post-upload browser checks are ongoing. Public deployment is pending Vercel authentication. The main workflow will finalize deliverable links and test evidence.
+**Checkpoint:** 57 unit tests passed; latest current-build desktop/mobile core and all five race checks passed, as did desktop PDF/DOCX/TXT upload and real Groq. Dedicated mobile TXT upload passed at **390×844, touch=True** in Chromium emulation through consent, preview, extraction, Kenya **39.6%** gap, four-week curated plan and Markdown download, with **0 model calls, 0 JavaScript errors** and no horizontal overflow at the analysis assertion. Mobile PDF/DOCX and physical-phone upload remain unverified. Source and exactly 90-second captioned video are published with anonymous access verified. Genuine user feedback remains pending. No current deck is generated: Felo needs an API key. Deployment awaits Vercel login; instructions have been provided.
 
 ## Design direction
 
 - Use one message per slide, generous spacing, strong contrast and large type. Keep screenshots legible, cropped to the action being discussed.
 - Use current application captures and simple editable diagrams. Distinguish **Implemented**, **Live-tested**, **Mock-tested** and **Verification ongoing** where relevant.
 - Reuse the product's visual identity. Use one accent colour for the learner's next action and a restrained evidence strip for source/date/limitations.
-- Keep detailed verification and disclosures in speaker notes or linked evidence. Keep the 2023-data label and the distinction between one live Groq observation and ongoing browser verification visible.
+- Keep detailed verification and disclosures in speaker notes or linked evidence. Keep the 2023-data label and distinguish single-run Groq latency from current browser-check results.
 
 ## Slide 1 — Your skills. Your market. Your path.
 
@@ -51,7 +51,7 @@ This outline replaces the older decks, which are **obsolete**. It is presentatio
 - Resources, weekly deliverables and fixed practice checks.
 - PDF / DOCX / TXT upload → editable preview → reviewed skills.
 
-**Visual:** three tightly cropped current flow screenshots. Label new upload captures accurately: implementation is complete, fresh browser verification is ongoing.
+**Visual:** three tightly cropped current flow screenshots; desktop upload verification passed for all three formats. Use actual captures, not fabricated screenshots/output.
 
 **Speaker cue:** Upload parses in app-server memory and returns text for review before skill extraction. The backend accepts up to **5 MiB**; the frontend caps files at **4,000,000 bytes** for Vercel request headroom. Scanned documents need external OCR. Manual skills remain available. Practice checks are learning feedback, not certification.
 
@@ -95,12 +95,15 @@ This outline replaces the older decks, which are **obsolete**. It is presentatio
 - **17 / 20** exact skill sets on developer-authored synthetic examples.
 - **0.9535 precision · 0.9762 recall** on that extraction check.
 - **57 unittest methods passing**, reported by main workflow on 2026-09-27.
-- Earlier pre-upload desktop/mobile and delayed-response checks passed.
-- Fresh integrated browser checks and demo recording ongoing.
+- Current desktop **1440×1100** / mobile **390×844** core checks and all **5** race checks passed.
+- Desktop PDF/DOCX/TXT upload and real Groq passed; captioned demo published.
+- Dedicated mobile TXT upload → curated plan → download passed (**390×844, touch=True**).
 
-**Visual:** compact evidence card beside the existing mobile screenshot; caption it as the recorded earlier core build.
+**Visual:** compact evidence card beside the current mobile TXT plan screenshot, local `artifacts/mobile-upload-plan.png`.
 
-**Speaker cue:** First-stage extraction metrics come from a small developer-authored synthetic set, not broad CV accuracy, upload evaluation or a fairness audit. Its 0.97 ms warm median and zero inference calls/cost exclude document parsing, startup, HTTP/browser work, retrieval and generation; they do not describe Groq or total operating cost. Earlier browser checks used Chromium at 1440 × 1100 and 390 × 844, before upload. Main workflow will add **[FINAL_TEST_RUN_TIMESTAMP_AND_RESULT]**. Groq's 2.27 seconds is one observed live-plan latency, not an aggregate benchmark; hosted cost is unmeasured.
+**Speaker cue:** The synthetic extraction set is not broad CV validation or a fairness audit. Its 0.97 ms warm median and zero inference calls/cost exclude parsing, startup, browser work, retrieval and generation. Current-build core Chromium checks recorded no JavaScript errors or external page requests. The dedicated mobile TXT check passed actual upload with consent, preview, extraction, Kenya 39.6% analysis, four curated weeks and Markdown download, with zero model calls/JavaScript errors and no horizontal overflow at analysis. This is touch-enabled Chromium emulation, not mobile PDF/DOCX or physical-phone verification. Groq's 2.27 seconds is one observed live-plan latency, not a benchmark; hosted cost is unmeasured.
+
+**Evidence/reproduction:** local `artifacts/mobile-upload-results.json` and `artifacts/mobile-upload-plan.png`; with the local server running and Playwright installed, run `.\.venv\Scripts\python.exe scripts/mobile_upload_test.py` from the project root. See [LOCAL_TEST_RESULTS.md](LOCAL_TEST_RESULTS.md). `artifacts/` is Git-ignored; selected JSON evidence is planned for the [demo-v1 release](https://github.com/Eeshan-Vaghjiani/njia/releases/tag/demo-v1), where only attached assets are publicly downloadable.
 
 ## Slide 7 — Keep the learner in control
 
@@ -112,7 +115,7 @@ This outline replaces the older decks, which are **obsolete**. It is presentatio
 - Hosted coaching receives structured curriculum, not CVs, identities or demand statistics.
 - Historical demand and short quizzes do not prove employability.
 
-**Visual:** current privacy notice and actual plan-mode label. Add fresh verified captures when ongoing browser checks finish.
+**Visual:** current privacy notice and actual plan-mode label from verified app captures.
 
 **Speaker cue:** On a public app, documents/text are processed on the hosting server, not the user's laptop or device. Basic redaction is not full anonymization, previews may contain personal data, and downloaded reports persist as user files. The report excludes raw CV text. Attribute the data to `lukebarousse/data_jobs`; the prepared licence statement is not independently verified provenance.
 
@@ -120,40 +123,28 @@ This outline replaces the older decks, which are **obsolete**. It is presentatio
 
 **On-slide copy**
 
-> **Next: Kenyan user feedback · record live/fallback evidence · finish mobile checks**
+> **Next: Kenyan user feedback · capture provider fallback · extend mobile formats/phone checks**
 >
 > Primary application: **Brightest — Skills & Employability**
 > Partner applications: **Brightest · Click Mobile · Artefact · Thunders**
 >
-> **[FINAL_SOURCE_CODE_URL]**
+> https://github.com/Eeshan-Vaghjiani/njia
 > **[FINAL_PRESENTATION_URL]**
-> **[FINAL_90_SECOND_DEMO_VIDEO_URL]**
+> https://github.com/Eeshan-Vaghjiani/njia/releases/download/demo-v1/njia-demo-90s.webm
 
 **Visual:** one strong current learning-plan deliverable, with readable links or QR codes generated only from the verified final URLs.
 
-**Speaker cue:** Ask for feedback on whether the plan helps a Kenyan learner choose and complete a useful next task. Award selections are recommendations, not guarantees. The planned source address is `https://github.com/Eeshan-Vaghjiani/njia`; publication and jury access are pending. Optional app link: **[FINAL_LIVE_APP_URL — PENDING VERCEL AUTHENTICATION]**. Real Felo export is blocked by a missing key; the outline is ready and recording is in progress. Main workflow will finalize links.
+**Speaker cue:** Ask whether the plan helps a Kenyan learner choose and complete a useful next task. Award selections are recommendations, not guarantees. Source and video anonymous access are verified. Optional app link: **[FINAL_LIVE_APP_URL — PENDING VERCEL AUTHENTICATION]**. Felo export is blocked by a missing key; no current presentation is generated.
 
 ## Required 90-second demo video
 
-Recording is in progress. Record the real application using a synthetic profile, and finish fresh integrated checks before describing that flow as verified. The video must be hosted with jury-view access; the walkthrough script is not the deliverable. Use the following timing as an editing target, and verify the actual final duration.
-
-| Time | Show | Narration / evidence boundary |
-| --- | --- | --- |
-| 0–8 s | Title and Kenya/Data Analyst context | “Njia turns your skills into a practical next learning step.” Label historical 2023 data. |
-| 8–23 s | Input and review of Excel, SQL, Power BI | Show implemented upload with a synthetic document, editable preview and skill correction. Complete the ongoing browser checks before calling the integrated journey verified. |
-| 23–39 s | Analysis and demand evidence | Show **391 postings**, **39.6% coverage**, top skills and the year. State that coverage is not hiring odds. |
-| 39–58 s | Four-week plan and one deliverable | Show the actual Groq mode/model label when recording a live result. Main workflow already observed `openai/gpt-oss-20b`, four weeks in 2.27 seconds on 2026-09-27; distinguish this dated observation from any new run. |
-| 58–68 s | Curated recovery path | Show an actual verified unavailable-provider result; an edited cut may connect separately recorded states, with clear labels. Never pass off a simulated response as live inference. |
-| 68–81 s | Short practice result and report export | Fixed answer-key feedback; no certification. Show the report without raw CV text. |
-| 81–90 s | Phone-width result and closing action | Use a fresh integrated mobile capture if verified. End on a practical learning deliverable and the project name. |
-
-If Groq is unavailable during recording, show the actual curated result and distinguish it from the dated successful live check. A failure-path recording remains pending until captured. Reliability evidence can reference mocks when clearly labelled; do not describe them as live provider calls.
+Published on the [demo-v1 release](https://github.com/Eeshan-Vaghjiani/njia/releases/tag/demo-v1): `artifacts/njia-demo-90s.webm`, **exactly 90.000 seconds, 1280 × 720**. It records actual CV upload and real Groq `openai/gpt-oss-20b` at normal speed, silent with Playwright captions. Anonymous direct-asset HEAD returned **200**, **3,498,819 bytes**. See [DEMO.md](DEMO.md) for the walkthrough. A live provider-failure recording remains pending.
 
 ## Final presentation checks
 
-- Replace every final URL placeholder; open source, deck/PDF and video with jury-view access. Local files alone are insufficient.
+- Add and verify the final presentation URL; source and video anonymous access are already verified.
 - Keep the canonical **391 / 39.6% / 2023** example consistent. Do not import numbers or stronger claims from obsolete decks.
-- Main workflow will finalize the ongoing post-upload browser results and links. Retain the dated 57-method and live Groq observations with their scope; existing screenshots must not imply a newer test run.
-- Complete the actual AI/tool/generated-asset inventory in [SUBMISSION_DRAFT.md](SUBMISSION_DRAFT.md). This outline is ready, but real Felo export is blocked by a missing key; no completed current presentation export is claimed.
+- Retain the dated 57-unit, current desktop/mobile core, five-race, desktop upload/Groq and dedicated touch-emulated mobile TXT results with their scope; mobile PDF/DOCX and physical-phone upload remain unverified.
+- AI inventory: OpenCode **`github-copilot/gpt-6-astra`** plus parallel coding/review agents; code-native HTML/CSS UI; silent Playwright-captioned actual-app video with real model output, no fabricated screenshots/output. See [AI_DISCLOSURE.md](AI_DISCLOSURE.md). Felo export remains blocked by a missing key.
 - Add genuine Kenyan user observations only if collected; otherwise retain “User validation pending.”
 - Submit the required links through the official form by **27 September 2026, 19:30 EAT**. See [JUDGING_EVIDENCE.md](JUDGING_EVIDENCE.md) for supporting artifacts and remaining evidence gaps.

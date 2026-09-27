@@ -2,7 +2,9 @@
 
 Njia is a career-coaching prototype built with **FastAPI and static JavaScript**. It compares self-reported skills with historical tech/data job postings, suggests a four-week learning path, and offers short practice checks and a downloadable Markdown evidence report.
 
-**Team Dhruzzz · Kenya · ONLINE:** Eeshan Vaghjiani, Bhavin Mepani, Dhruvin Bhudia. Planned repository: https://github.com/Eeshan-Vaghjiani/njia (publication/access pending). Public deployment is pending Vercel authentication; demo recording is in progress. The presentation outline is ready, but Felo export is blocked by a missing API key. Final links and test evidence will be supplied by the main workflow.
+**Team Dhruzzz · Kenya · ONLINE.** Public repository creation/access verified: https://github.com/Eeshan-Vaghjiani/njia. Team identity/contact details are held privately for submission. Vercel is not authenticated; no public deployment is complete. The presentation outline is ready, but Felo export remains blocked by a missing API key.
+
+**90-second demo:** [view the release page](https://github.com/Eeshan-Vaghjiani/njia/releases/tag/demo-v1) or [download the video](https://github.com/Eeshan-Vaghjiani/njia/releases/download/demo-v1/njia-demo-90s.webm). The published `artifacts/njia-demo-90s.webm` is **exactly 90.000 seconds, 1280 × 720**, a normal-speed actual-app recording of CV upload and real Groq coaching, silent with Playwright captions. Anonymous access verified: direct asset HEAD **200**, **3,498,819 bytes**.
 
 The default experience uses local lexicon extraction, deterministic demand calculations, TF-IDF retrieval, and curated learning activities. **No hosted inference API, API key, NVIDIA Brev, or generative model is required.**
 
@@ -87,7 +89,7 @@ This requires a separately installed, running Ollama and a downloaded model (`ol
 
 Optional models rewrite only plan titles, tasks, and deliverables from structured curriculum. Statistics, skill targets, hours, and resource links remain deterministic. The Ollama endpoint must use a loopback hostname; this restriction does not apply to the separate hosted Groq integration. Missing credentials, connection failures, rate limits or invalid output return the complete curated plan. `NJIA_AI_PROVIDER=offline` restores the default. A configured-provider label does not prove model availability; the returned plan identifies the mode that actually ran.
 
-See [AI disclosure](docs/AI_DISCLOSURE.md) for boundaries and validation details.
+Development used OpenCode with main agent label `github-copilot/gpt-6-astra` and parallel coding/review agents in the same harness; their underlying model identities were not independently established. UI visuals are code-native HTML/CSS. The captioned Playwright demo records the actual app and real model output, with no fabricated screenshots/output or synthetic voice. See [AI disclosure](docs/AI_DISCLOSURE.md) for runtime boundaries and validation details.
 
 ## Checks and recorded results
 
@@ -121,11 +123,18 @@ For Chromium checks, keep the local server running in a separate terminal:
 .\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
 .\.venv\Scripts\python.exe -m playwright install chromium
 .\.venv\Scripts\python.exe scripts/browser_test.py
+.\.venv\Scripts\python.exe scripts/mobile_upload_test.py
 ```
 
-On Linux, use `.venv/bin/python` for these commands; Chromium may also require Playwright's system dependencies. **Earlier, pre-upload Chromium verification passed** at desktop 1440×1100 and mobile 390×844, with no JavaScript errors or external page requests in that run. It exercised extraction, analysis, plans, progress, practice grading, report downloads, sample fallback, manual/empty skills, reset, and session isolation. Screenshots and results are in `artifacts/`. **Fresh post-upload browser checks and demo recording are ongoing; completion is not yet claimed.**
+On Linux, use `.venv/bin/python` for these commands; Chromium may also require Playwright's system dependencies. **Current-build Chromium verification passed** at desktop 1440×1100 and mobile 390×844, with no JavaScript errors or external page requests. It exercised extraction, analysis, plans, progress, practice grading, report downloads, sample fallback, manual/empty skills, reset, and session isolation. Screenshots and results are in `artifacts/`.
 
-Five earlier, pre-upload asynchronous regression checks passed, deliberately delivering held responses after newer user actions: clear-during-extraction, competing plans, assessment restart, competing grades, and preserving answers across tabs. These do not establish post-upload regression status. Run them against the local server with:
+**Current desktop browser evidence, supplied by the main workflow on 2026-09-27:** `scripts/upload_browser_test.py` passed actual PDF, DOCX and TXT uploads through editable preview → extraction → analysis; invalid-file, oversize, scanned-PDF and consent-error cases passed. Real Groq coaching passed with `openai/gpt-oss-20b` in-browser and in the completed video.
+
+**Current mobile TXT upload: PASS.** `scripts/mobile_upload_test.py` passed Chromium mobile emulation at **390×844, touch=True**: actual synthetic TXT file upload with processing consent → text preview → extraction → Kenya gap analysis (**39.6%**) → four-week curated plan → Markdown download. The result records **0 model calls and 0 JavaScript errors**; the script also passed its horizontal-overflow assertion at analysis. This verifies TXT on an emulated mobile browser, not mobile PDF/DOCX or a physical phone. Local evidence: `artifacts/mobile-upload-results.json` and `artifacts/mobile-upload-plan.png`. Genuine user feedback has not been collected.
+
+`artifacts/` is ignored by Git, so artifact paths here refer to local files rather than public repository links. Selected JSON evidence is planned for the [demo-v1 release](https://github.com/Eeshan-Vaghjiani/njia/releases/tag/demo-v1); only assets actually attached there are publicly downloadable. See [local test results](docs/LOCAL_TEST_RESULTS.md) for the recorded scope.
+
+All five asynchronous regression checks passed on the current build, deliberately delivering held responses after newer user actions: clear-during-extraction, competing plans, assessment restart, competing grades, and preserving answers across tabs. Run them against the local server with:
 
 ```powershell
 .\.venv\Scripts\python.exe scripts/race_test.py
@@ -142,4 +151,4 @@ Five earlier, pre-upload asynchronous regression checks passed, deliberately del
 - `tests/`, `scripts/`, `artifacts/`: automated checks, evaluation, and recorded outputs.
 - [90-second demo](docs/DEMO.md) and [AI disclosure](docs/AI_DISCLOSURE.md).
 
-`GAME_PLAN.md`, `STRATEGY.md`, research notes, and existing pitch decks are earlier planning material, not current capability evidence. Use the current source, these docs, and [presentation outline](docs/PRESENTATION_OUTLINE.md) for claims. Groq is implemented; NVIDIA Brev is not used. Public deployment, final presentation export, final links and submission remain pending.
+`GAME_PLAN.md`, `STRATEGY.md`, research notes, and existing pitch decks are earlier planning material, not current capability evidence. Use the current source, these docs, and [presentation outline](docs/PRESENTATION_OUTLINE.md) for claims. Groq passed a real browser check; NVIDIA Brev is not used. Source and video are published with anonymous access verified. Public deployment awaits Vercel login; login instructions have been provided. Final presentation export awaits a Felo key; submission remains pending.

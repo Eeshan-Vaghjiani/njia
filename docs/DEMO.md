@@ -1,15 +1,25 @@
 # Njia: 90-second demo
 
-**2026-09-27 checkpoint:** demo recording and fresh post-upload browser checks are in progress. Main workflow reports 57 unittest methods passing and a live Groq four-week plan from `openai/gpt-oss-20b` in 2.27 seconds. Final recording, links and test results will be added later. Planned repository: https://github.com/Eeshan-Vaghjiani/njia; publication/access pending. Public deployment awaits Vercel authentication. The presentation outline is ready; Felo export is blocked by a missing key, and older decks do not represent current capabilities.
+**2026-09-27 completed evidence, supplied by main workflow:** 57 unit tests pass. Actual desktop browser PDF/DOCX/TXT upload → editable preview → extraction → analysis passed, along with invalid-file, oversize, scanned-PDF and consent-error handling. Real Groq coaching passed in-browser with `openai/gpt-oss-20b`; a separate live observation returned four weeks in 2.27 seconds. Public repository creation/access is verified: https://github.com/Eeshan-Vaghjiani/njia. Vercel remains unauthenticated, with no completed deployment. Felo export remains blocked by a missing key; older decks do not represent current capabilities.
+
+## Completed video
+
+- Local artifact: `artifacts/njia-demo-90s.webm` — **exactly 90.000 seconds, 1280 × 720**.
+- Normal-speed actual-browser CV upload and real Groq model demo, silent with Playwright captions; no fabricated screenshots/output or synthetic voice.
+- Required video URL: https://github.com/Eeshan-Vaghjiani/njia/releases/download/demo-v1/njia-demo-90s.webm
+- [View/download from the demo-v1 release page](https://github.com/Eeshan-Vaghjiani/njia/releases/tag/demo-v1).
+- Release published; anonymous access verified. Direct asset HEAD returned **200**, **3,498,819 bytes**.
+
+The walkthrough below is a presenter/rehearsal guide. The completed WebM is the video deliverable.
 
 ## Before the timer
 
 1. Follow the [README setup](../README.md#run-locally), then run `start.ps1` from the project root. Open **http://127.0.0.1:8000**.
 2. Check the configured provider and actual returned plan mode. The default is `NJIA_AI_PROVIDER=offline` unless configured. For hosted coaching, main workflow configures Groq with a server-held key and `openai/gpt-oss-20b`; explicitly opt in before generation. Curated plans are available without AI consent. Ollama remains mock-tested only.
 3. Use **Reset this session** for a clean start. Keep the browser's download location accessible for the Markdown report. Use a synthetic PDF/DOCX/TXT or the built-in synthetic profile, not a real CV. The backend accepts up to 5 MiB; the frontend caps files at 4,000,000 bytes to leave room under Vercel's request limit.
-4. Rehearse the clicks below. Earlier pre-upload Chromium desktop/mobile checks passed; new browser checks are ongoing and must not be described as complete.
+4. Rehearse the clicks below. Current desktop upload, real Groq and core desktop/mobile checks passed; all five race checks passed. Dedicated mobile TXT upload also passed at 390×844 with touch emulation; mobile PDF/DOCX and physical-phone upload remain unverified.
 
-This script supports the required 90-second recording; it is not itself the video deliverable. A local walkthrough is possible while public deployment remains pending.
+The completed video demonstrates the local actual app; no public deployment or native app is claimed.
 
 ## Timed walkthrough
 
@@ -43,10 +53,13 @@ This script supports the required 90-second recording; it is not itself the vide
 
 - **Unit/API checks:** main workflow reports **57 unittest methods passing** at the 2026-09-27 checkpoint; not rerun for this documentation-only update.
 - **First-stage extraction artifact:** 20 synthetic CV examples; precision **0.9535**, recall **0.9762**, exact matches **17/20**, warm median **0.97 ms**. Timing excludes document parsing, HTTP/browser work, retrieval and generation; zero inference calls/cost is only for that extraction run. This is not an upload or hosted-model benchmark, and the examples are developer-authored, not independent validation.
-- **Browser checks:** earlier pre-upload `scripts/browser_test.py` passed the core desktop/mobile walkthrough with zero JavaScript errors and zero external page requests in that run. Five earlier asynchronous checks passed in `scripts/race_test.py`. New integrated browser verification and recording are ongoing.
+- **Browser checks:** desktop `scripts/upload_browser_test.py` passed PDF/DOCX/TXT upload, editable preview, extraction, analysis and error handling, plus real Groq `openai/gpt-oss-20b`. Latest current-build `scripts/browser_test.py` passed desktop **1440×1100** and mobile **390×844**, with zero JavaScript errors or external page requests; `scripts/race_test.py` passed all **five** checks.
+- **Mobile TXT upload:** current-build `scripts/mobile_upload_test.py` **passed** Chromium mobile emulation at **390×844, touch=True**: actual synthetic TXT upload with processing consent → preview → extraction → Kenya gap (**39.6%**) → four-week curated plan → Markdown download. **0 model calls, 0 JavaScript errors**, and no horizontal overflow at the analysis assertion. This does not verify mobile PDF/DOCX or physical-phone upload. Local evidence: `artifacts/mobile-upload-results.json`, `artifacts/mobile-upload-plan.png`. Genuine user feedback remains pending.
 - **AI:** default lexicon/curated mode uses no generative model. Main workflow live-tested Groq **`openai/gpt-oss-20b` on 2026-09-27**, returning four weeks in **2.27 seconds** in one observed run, not a benchmark. The original `llama-3.3-70b-versatile` was unavailable in the account model list; the default changed accordingly. Optional local Ollama `qwen2.5:3b` remains mock-tested only. No NVIDIA Brev is used.
 - **Data:** 2023 tech/data postings are not current or representative of all employment. The prepared documentation attributes the source to `lukebarousse/data_jobs` and identifies Apache-2.0; provenance and licensing have not been independently verified.
 - **Privacy:** no application-level raw CV persistence; basic redaction is not comprehensive anonymization. On a public app, document/text processing takes place on the hosting server, not the user's laptop. Groq receives only allowlisted structured curriculum, not CV text, identities, country/role or demand statistics. Exported reports contain self-reported skills and any submitted reflection.
 - **Earlier materials:** `GAME_PLAN.md`, `STRATEGY.md`, and existing decks are not current capability evidence. Use this script and the updated presentation outline.
+
+To reproduce the mobile TXT check with the local server running and Playwright installed, run `.\.venv\Scripts\python.exe scripts/mobile_upload_test.py` from the project root. See [local test results](LOCAL_TEST_RESULTS.md). `artifacts/` is Git-ignored; these are local paths. Selected JSON evidence is planned for the [demo-v1 release](https://github.com/Eeshan-Vaghjiani/njia/releases/tag/demo-v1); only attached assets are publicly downloadable.
 
 If the local engine does not load, check the server terminal and refresh. If extraction is unsuitable, choose skills manually. Curated planning provides a complete path without model availability or AI consent.

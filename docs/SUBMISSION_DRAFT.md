@@ -4,7 +4,9 @@
 
 Form wording and deadline follow [HACKATHON_REQUIREMENTS.md](HACKATHON_REQUIREMENTS.md). This is a draft, not a submitted entry. Submit once through the [official project form](https://docs.google.com/forms/d/e/1FAIpQLSebmyKeBPv2mrmy4T_wI2_z9SBjjSTZ-O-_ewiWs6PBEikRjw/viewform) by **27 September 2026, 19:30 EAT**.
 
-Current status supplied by the team/main workflow on **2026-09-27**: PDF/DOCX/TXT browser upload and in-memory backend are implemented, with editable preview, skill review and manual entry. **57 unittest methods pass. Groq live-tested:** actual model **`openai/gpt-oss-20b`**, four-week plan in **2.27 seconds** in one observed run. Earlier browser/race evidence predates upload; fresh browser tests and demo recording are ongoing. Public deployment awaits Vercel authentication. The outline is ready, but real Felo presentation export is blocked by a missing key. Earlier pitch decks are obsolete. Final links and test evidence will be supplied by the main workflow.
+Current evidence supplied by the team/main workflow on **2026-09-27**: **57 unit tests pass**. Latest current-build browser checks passed desktop **1440×1100** and mobile **390×844**, with no JavaScript errors or external page requests; all **five race checks passed**. Desktop PDF/DOCX/TXT upload/preview/extraction/analysis and error handling passed, as did real Groq **`openai/gpt-oss-20b`**. Dedicated mobile **TXT** upload also passed at **390×844, touch=True**, through consent, preview, extraction, Kenya gap (**39.6%**), four-week curated plan and Markdown download, with **0 model calls, 0 JavaScript errors** and no horizontal overflow at the analysis assertion. This is Chromium mobile emulation; mobile PDF/DOCX and physical-phone upload remain unverified. Public source and the **90.000-second, 1280 × 720** silent captioned actual-app upload/Groq video are published with anonymous access verified. Deployment awaits Vercel login; instructions have been provided. No current deck is generated: Felo needs an API key. Genuine user feedback remains pending.
+
+Mobile evidence: `artifacts/mobile-upload-results.json` and `artifacts/mobile-upload-plan.png`. With the local server running and Playwright installed, run `.\.venv\Scripts\python.exe scripts/mobile_upload_test.py` from the project root; see [local test results](LOCAL_TEST_RESULTS.md). `artifacts/` is Git-ignored, so these paths are local. Selected JSON evidence is planned for the [demo-v1 release](https://github.com/Eeshan-Vaghjiani/njia/releases/tag/demo-v1); only attached assets are publicly downloadable.
 
 ## Exact form fields, in order
 
@@ -22,7 +24,7 @@ Dhruzzz
 
 ### 4. Team leader full name
 
-Eeshan Vaghjiani
+Supply privately in the official form from the confirmed team records; identity details are not included in this public draft.
 
 ### 5. Team leader email
 
@@ -34,15 +36,11 @@ Njia
 
 ### 7. Team members — full name of each member, one per line
 
-```text
-Eeshan Vaghjiani
-Bhavin Mepani
-Dhruvin Bhudia
-```
+Supply the confirmed roster privately in the official form, one full name per line. Member identity/contact details are not included in this public draft.
 
 ### 8. Project summary — maximum 150 words
 
-Njia helps Kenyan tech and data job seekers turn existing skills into a practical next learning step. Users upload PDF, DOCX or TXT documents, review editable text and skill suggestions, or enter skills manually. They compare confirmed skills with historical demand, build a four-week plan, try short practice checks and download an evidence report. The prototype uses 18,371 postings from 2023 across ten African and MENA countries, with visible sample sizes and broader-sample fallback. Documents are processed in app-server memory. Optional, explicitly opted-in Groq coaching rewrites structured curriculum while preserving calculated statistics and curated resources; a live openai/gpt-oss-20b call returned a four-week plan in 2.27 seconds. Curated plans remain available without AI consent. Coverage describes advertised skill mentions, not hiring odds or certified competence. Fresh integrated browser checks are ongoing.
+Njia helps Kenyan tech and data job seekers turn existing skills into a practical next learning step. Users upload PDF, DOCX or TXT documents, review editable text and skill suggestions, or enter skills manually. They compare confirmed skills with historical demand, build a four-week plan, try short practice checks and download an evidence report. The browser prototype uses 18,371 postings from 2023 across ten African and MENA countries, with visible sample sizes and broader-sample fallback. Documents are processed in app-server memory. Optional, explicitly opted-in Groq coaching rewrites structured curriculum while preserving calculated statistics and curated resources. Actual document upload, preview, extraction and analysis passed desktop browser checks; real Groq coaching also passed in-browser with openai/gpt-oss-20b. Curated plans remain available without AI consent. Coverage describes advertised skill mentions, not hiring odds or certified competence.
 
 ### 9. Problem solved
 
@@ -51,7 +49,7 @@ A Kenyan learner targeting a tech or data role needs to decide what to learn nex
 ### 10. Solution and key features
 
 - **Reviewable skills:** upload a document, paste experience or select skills manually; keyword/alias suggestions can be corrected before analysis.
-- **Document input:** PDF, DOCX and UTF-8 TXT browser uploads produce an editable-text preview through `/api/upload`, with processing consent and in-memory parsing. The backend accepts up to **5 MiB**; the frontend caps files at **4,000,000 bytes** to leave room under Vercel's request limit. Scanned PDFs require external OCR. Fresh browser verification is ongoing. Public-app processing occurs on the hosting server, not the user's laptop; previews may contain personal data.
+- **Document input:** PDF, DOCX and UTF-8 TXT browser uploads produce an editable-text preview through `/api/upload`, with processing consent and in-memory parsing. The backend accepts up to **5 MiB**; the frontend caps files at **4,000,000 bytes** to leave room under Vercel's request limit. Actual desktop upload/preview/extract/analyze checks and invalid-file, oversize, scanned-PDF and consent-error cases passed. Scanned PDFs require external OCR. Public-app processing occurs on the hosting server, not the user's laptop; previews may contain personal data.
 - **Explainable gaps:** canonicalized historical posting counts, top-15 demand-weighted coverage, sample sizes and explicit broader-sample fallback below 50 local postings.
 - **Relevant examples:** TF-IDF/cosine retrieval of historical postings, labelled as 2023 examples rather than live vacancies.
 - **Actionable learning:** a four-week curated plan with hours, exercises, resources and deliverables. Optional Groq wording enhancement is implemented, mock-tested and live-tested by the main workflow on 2026-09-27: **`openai/gpt-oss-20b`, four weeks in 2.27 seconds** in one observed run. `/api/plan` enforces remote opt-in using `use_ai`/`ai_consent`; curated plans need no AI consent.
@@ -64,9 +62,9 @@ Python; FastAPI; Uvicorn; Pydantic; HTML/CSS/JavaScript; scikit-learn TF-IDF and
 
 ### 12. Source code URL
 
-**[FINAL_SOURCE_CODE_URL — PENDING CREATION AND JURY-ACCESS CHECK]**
+https://github.com/Eeshan-Vaghjiani/njia
 
-Planned repository: `https://github.com/Eeshan-Vaghjiani/njia`. Publication and jury access remain pending; the main workflow will finalize this link.
+Public repository creation and anonymous access verified by the main workflow on 2026-09-27.
 
 ### 13. Presentation URL
 
@@ -76,13 +74,13 @@ The [presentation outline](PRESENTATION_OUTLINE.md) is ready. **Real Felo export
 
 ### 14. 90-second demo video URL
 
-**[FINAL_90_SECOND_DEMO_VIDEO_URL — PENDING RECORDING, HOSTING AND JURY-ACCESS CHECK]**
+https://github.com/Eeshan-Vaghjiani/njia/releases/download/demo-v1/njia-demo-90s.webm
 
-A jury-accessible **90-second recorded demo is required**, alongside the source and presentation URLs. Recording is **in progress**; a script or local walkthrough does not satisfy this field.
+View/download the published video from the [demo-v1 release page](https://github.com/Eeshan-Vaghjiani/njia/releases/tag/demo-v1). `artifacts/njia-demo-90s.webm` is **exactly 90.000 seconds, 1280 × 720**, normal-speed actual CV upload and real Groq recording, silent with Playwright captions; no fabricated screenshots/output or synthetic voice. Anonymous direct-asset HEAD returned **200**, **3,498,819 bytes**.
 
 ### 15. Project next step
 
-Finish the ongoing post-upload desktop/mobile checks and demo recording, capture the live Groq result and curated fallback, and finalize jury-accessible source, presentation and video links. Conduct short, consented usability sessions with Kenyan learners or job seekers to measure whether they can identify a useful next learning task, understand coverage, and finish the flow; record actual observations rather than assumed demand. Use that feedback to refine privacy labels, curriculum and mobile interaction, then expand evaluation beyond synthetic examples and refresh the historical data with documented provenance.
+Complete the presentation once Felo access is available, finish Vercel login for deployment, and extend the passing emulated mobile TXT check to PDF/DOCX and physical phones. Conduct short, consented usability sessions with Kenyan learners or job seekers to measure whether they can identify a useful next learning task, understand coverage, and finish the flow. Use actual feedback to refine privacy labels, curriculum and mobile interaction, then expand evaluation beyond synthetic examples and refresh the historical data with documented provenance.
 
 ### 16. Partner awards — which prizes is your team applying for?
 
@@ -93,7 +91,7 @@ Recommended selections, using the exact checkbox wording:
 - **Artefact — Data & AI Award | Data into actionable insights or useful AI solutions with measurable business or societal impact | Approx. US$1,040 gift voucher; one winning team; ALL PARTICIPATING COUNTRIES; redemption terms TBC**
 - **Thunders — Engineering Excellence Award | Strong, reliable technical prototype | One Mac mini; one team**
 
-These are fit recommendations, not eligibility approvals or award guarantees. Kenya/ONLINE and the roster above are user-supplied; organizer registration/attendance records remain authoritative. Click Mobile's KSh 50,000 is the total Kenya contribution, with allocation unannounced. Country podium consideration is automatic for eligible entries; do not also select the podium-only checkbox.
+These are fit recommendations, not eligibility approvals or award guarantees. Kenya/ONLINE and the privately held roster are user-supplied; organizer registration/attendance records remain authoritative. Click Mobile's KSh 50,000 is the total Kenya contribution, with allocation unannounced. Country podium consideration is automatic for eligible entries; do not also select the podium-only checkbox.
 
 ### 17. Primary prize application — choose the award that best fits your project
 
@@ -103,11 +101,11 @@ These are fit recommendations, not eligibility approvals or award guarantees. Ke
 
 **Brightest GmbH — Skills & Employability Award:** Njia supports job-relevant learning through visible skill gaps, four-week activities, short practice checks and an exportable evidence report, making this our strongest thematic fit. The existing Kenya/Data Analyst walkthrough demonstrates that learning workflow, but does not establish accredited qualifications or improved hiring outcomes. We are a Kenya/ONLINE team; the published award lists no Kenya exclusion, subject to organizer confirmation of eligibility.
 
-**Click Mobile — Mobile-First Impact Award:** Njia targets a practical Kenyan learner need through a browser-based path from skills to learning actions, and recorded Chromium checks cover the core journey at 390 × 844. Our team participates from Kenya/ONLINE, matching the published Kenya-only scope; the newly integrated upload and hosted-coaching journey still needs a fresh mobile demonstration. We claim a mobile-browser prototype, not measured adoption or proven employment impact.
+**Click Mobile — Mobile-First Impact Award:** Njia targets a practical Kenyan learner need through a browser-based path from skills to learning actions; current-build Chromium checks passed the core journey and a dedicated TXT upload → preview/consent → extraction → Kenya gap (39.6%) → curated plan → download flow at 390×844 with touch emulation, zero model calls/JavaScript errors and no horizontal overflow at analysis. Our Kenya/ONLINE team matches the published Kenya-only scope; mobile PDF/DOCX and physical-phone upload remain unverified. We claim a mobile-browser prototype, not measured adoption or proven employment impact.
 
 **Artefact — Data & AI Award:** Njia converts 2023 posting data into explainable skill-demand analysis, historical retrieval and learning actions; the canonical Kenya/Data Analyst sample contains 391 postings and gives the example profile 39.6% demand-weighted coverage. The first-stage extraction evaluation records 17 exact matches across 20 developer-authored synthetic examples; separately, a live Groq `openai/gpt-oss-20b` call returned a four-week plan in 2.27 seconds on 2026-09-27—prototype observations, not societal-outcome evidence or broad performance benchmarks. The award explicitly accepts all participating countries, including Kenya, subject to the team's confirmed participation.
 
-**Thunders — Engineering Excellence Award:** Njia demonstrates engineering care through canonicalized calculations, explicit sample fallback, bounded document parsing, server-enforced remote-AI opt-in, provider-output validation and complete curated-plan fallback. Main workflow reports 57 unittest methods passing and a successful live Groq plan; recorded pre-upload desktop/mobile and delayed-response checks provide baseline evidence while fresh integrated browser checks remain ongoing. We are a Kenya/ONLINE team, and no Kenya exclusion is stated in the published award description; final eligibility remains with organizers.
+**Thunders — Engineering Excellence Award:** Njia demonstrates engineering care through canonicalized calculations, sample fallback, bounded document parsing, server-enforced remote-AI opt-in, provider-output validation and curated-plan fallback. Evidence includes 57 passing unit tests, current-build desktop/mobile core and all five race checks, desktop PDF/DOCX/TXT upload/error checks, dedicated touch-emulated mobile TXT upload through curated plan/download, and real Groq coaching in-browser. We are a Kenya/ONLINE team; no Kenya exclusion is stated in the published award description, with final eligibility determined by organizers.
 
 ### 19. AI/tool disclosure — list models, agents, datasets, APIs and generated assets used. Explain your chosen stack, access constraints, actual AI contribution and fallback. State honestly if no AI was used. Brev is optional; explain its use only if used. Do not include voucher codes, passwords or API keys.
 
@@ -119,7 +117,7 @@ PDF/DOCX/TXT documents and pasted text are processed in app-server memory; on a 
 
 Optional local Ollama defaults to `qwen2.5:3b`; its integration is mock-tested but not live-verified. NVIDIA Brev was not used. The bundled source is attributed to `lukebarousse/data_jobs`: 18,371 historical 2023 postings from ten African/MENA countries. Prepared documentation identifies Apache-2.0; provenance and licensing have not been independently verified. The small extraction evaluation uses 20 developer-authored synthetic examples and is not a real-user or fairness study.
 
-AI coding assistance was used for code and documentation. This documentation pass used OpenCode with `github-copilot/gpt-6-astra`; development assistance is distinct from runtime AI. No slides or visual assets were generated in this pass. **[BEFORE SUBMITTING: complete the inventory of other development agents/models and any generated assets actually included in the final build, deck or video; replace this note with verified details.]**
+AI coding assistance used **OpenCode**, main agent **`github-copilot/gpt-6-astra`**, plus parallel coding/review agents in the same harness; their underlying model identities were not independently established. Assistance covered application code, documentation and review. UI visuals are code-native HTML/CSS. The silent, captioned Playwright demo records actual CV upload and real Groq output at normal speed, with no fabricated screenshots/output or synthetic voice. Felo presentation generation is blocked by a missing API key. Development assistance is distinct from runtime Groq coaching.
 
 ### 20. Final confirmation
 
@@ -127,12 +125,12 @@ Exact required checkbox statement:
 
 > I confirm that our functional prototype, source code, presentation, 90-second demo video, project card details and AI/tool disclosure are complete, accessible and final.
 
-**Pending.** Select only after replacing the final URL placeholders, completing the disclosure inventory, checking jury access and aligning the claims with the demonstrated final build.
+**Pending.** Source and video access are verified; complete the presentation and remaining required deliverables before confirming.
 
 ## Final handoff
 
 - Required URLs: source, final presentation and **90-second video**, each opened successfully with jury-view access.
 - Optional live app: **[FINAL_LIVE_APP_URL — OPTIONAL; PENDING VERCEL AUTHENTICATION]**. A local prototype with run instructions and recorded demo is permitted.
-- Complete ongoing integrated desktop/mobile checks and demo recording. Preserve the dated live-model observation above and add final evidence references without describing earlier browser results as post-upload verification.
-- Use the dated evidence in [JUDGING_EVIDENCE.md](JUDGING_EVIDENCE.md); derive any final test total from the final run rather than freezing a changing count here.
+- Current desktop/mobile core, all five race checks, desktop upload, dedicated touch-emulated mobile TXT upload and real browser Groq passed. The 90.000-second video is published and anonymously accessible. Mobile PDF/DOCX and physical-phone upload remain unverified.
+- Use the dated evidence in [JUDGING_EVIDENCE.md](JUDGING_EVIDENCE.md): 57 unit tests passed at this checkpoint, as supplied by the main workflow.
 - Submit the official form by the Kenya deadline and retain the receipt separately. No submission completion is claimed in this draft.
