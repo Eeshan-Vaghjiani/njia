@@ -52,7 +52,7 @@ Skills are lowercased, aliases canonicalized and duplicates removed per posting.
 - **48 new-production acceptance assertions passed.**
 - **9 recording assertions passed.**
 - **57 total acceptance/recording assertions (48 + 9).**
-- **72 unit tests passed, separately.**
+- **73 backend tests passed, separately.**
 - Real new-production Groq inference verified with **`openai/gpt-oss-20b`**; the updated exact-90-second demo records the real public app.
 
 No tests were rerun for this documentation-only update. These counts are not independent model-quality, fairness or user-outcome studies. Earlier 38-check production evidence and four-week plan timings concern the older classic flow and must not be presented as current root verification. Browser mobile/emulation evidence does not establish physical-phone performance or adoption.
@@ -63,14 +63,14 @@ The earlier extraction-only synthetic evaluation had 20 developer-authored examp
 
 Development used **OpenCode**, main agent label **`github-copilot/gpt-6-astra`**, plus coding/review agents in the same harness whose underlying identities were not independently established. Assistance covered application code, documentation and review. The lightweight application stack uses Python/FastAPI, static HTML/CSS/JavaScript, HTTPX, Pydantic, document parsers and scikit-learn; checks use unittest and Playwright/Chromium. UI visuals are code-native.
 
-The **final eight-page deck was generated locally with python-pptx and Playwright**, not Felo or Gemini. **Gemini access returned HTTP 403 because the key was suspended; Gemini was never used for inference.** No credential values are disclosed. The captioned video is exactly **90.000 seconds**, showing real public-app interaction and real Groq output; no fabricated responses or synthetic voice are used.
+The **final eight-page deck was generated locally with python-pptx and Playwright**. Gemini was not used for inference; NVIDIA Brev was not used. No credential values are disclosed. The published captioned video is exactly **90.000 seconds**, showing real public-app interaction and real Groq output; no fabricated responses or synthetic voice are used. The [voiceover script](VOICEOVER.md) is ready as supporting material; it is not a claim that narration is present in the published recording.
 
 ## Public handoff
 
 - Live: https://gomycode-2026.vercel.app
 - Source: https://github.com/Eeshan-Vaghjiani/njia
-- PDF: https://github.com/Eeshan-Vaghjiani/njia/releases/download/demo-v1/Njia-Dhruzzz.pdf
+- PDF: https://github.com/Eeshan-Vaghjiani/njia/blob/main/presentation/Njia-Dhruzzz.pdf
 - PPTX: https://github.com/Eeshan-Vaghjiani/njia/releases/download/demo-v1/Njia-Dhruzzz.pptx
 - Demo: https://github.com/Eeshan-Vaghjiani/njia/releases/download/demo-v1/njia-demo-90s.webm
 
-The main workflow is uploading the final assets to these release locations; the final source push is pending. Existing source/live URLs are unchanged. Updated-asset accessibility must be confirmed during final human review. The entry has not been submitted.
+Source, presentation and demo are published. The official project form **has not been submitted**. See the [final checklist](FINAL_CHECKLIST.md) for human review and submission.

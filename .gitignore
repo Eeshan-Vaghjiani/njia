@@ -7,3 +7,14 @@ private/
 artifacts/
 node_modules/
 data/data_jobs.csv
+
+# Local planning material predating the submitted application.
+.agents/
+.claude/
+COMPETITOR_RESEARCH.md
+GAME_PLAN.md
+STRATEGY.md
+/Njia_pitch*.pptx
+/make_deck.py
+/make_deck_pro.py
+/skills-lock.json

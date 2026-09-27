@@ -2,15 +2,19 @@
   "pptx_slides": 8,
   "pdf_pages": 8,
   "aspect_ratio": "16:9",
-  "pptx_bytes": 63073,
-  "pdf_bytes": 249719,
+  "pptx_bytes": 63072,
+  "pdf_bytes": 249822,
   "checks": [
     "Slide/page count",
     "Required content in PPTX and PDF",
     "PPTX shape bounds",
     "Speaker notes on all slides",
     "PDF searchable text",
-    "PDF aspect ratio"
+    "PDF aspect ratio",
+    "73 backend tests; 57 public assertions = 48 + 9",
+    "No stale count or pending release text",
+    "Published demo URL in PPTX, PDF and HTML",
+    "Human factual-review caveat retained"
   ],
-  "advisor_validation": "72 backend tests confirmed by main owner; 48 public acceptance + 9 recording assertions verified from artifacts; human factual review required"
+  "advisor_validation": "73 backend tests confirmed by main owner; 48 public acceptance + 9 recording assertions verified from artifacts; human factual review required"
 }

@@ -18,30 +18,30 @@
 | Brief | Summary, evidence strengths, priorities, before/after suggestions, seven-day actions, interview guidance and downloadable HTML |
 | Export privacy | CV-evidence and before/after sections excluded by default; explicit inclusion available; other personalised advice may reveal CV details |
 | Accuracy limit | Observed unsupported **“real-time sales monitoring”** rewrite; generated claims require review, with no overall factual guarantee |
-| Latest reported checks | **48 acceptance + 9 recording assertions = 57**, separately from **72 unit tests**; no rerun in this docs-only pass |
-| Presentation | Final **8 pages**, generated locally with **python-pptx + Playwright**, not Felo/Gemini |
-| Gemini | **HTTP 403, suspended key; never used for inference**; no key values published |
+| Latest reported checks | **48 acceptance + 9 recording assertions = 57**, separately from **73 backend tests** |
+| Presentation | Published **8 pages**, generated locally with **python-pptx + Playwright** |
 | Demo | Updated **exactly 90.000-second**, captioned recording of real public-app interaction and real Groq output |
-| Publication status | Main workflow uploading final assets; **final source push pending**; source/live URLs unchanged |
+| Voiceover | [Ready script](VOICEOVER.md); the published demo is captioned, and narration is not explicitly mandatory in the official requirements |
+| Publication status | **Source, presentation and demo published; official form not submitted** |
 
 ## Final links
 
 | Form use | URL |
 | --- | --- |
 | Source — field 12 | https://github.com/Eeshan-Vaghjiani/njia |
-| Presentation — field 13, direct PDF accepted | https://github.com/Eeshan-Vaghjiani/njia/releases/download/demo-v1/Njia-Dhruzzz.pdf |
+| Presentation — field 13, viewable PDF | https://github.com/Eeshan-Vaghjiani/njia/blob/main/presentation/Njia-Dhruzzz.pdf |
 | Video — field 14 | https://github.com/Eeshan-Vaghjiani/njia/releases/download/demo-v1/njia-demo-90s.webm |
 | Editable presentation companion | https://github.com/Eeshan-Vaghjiani/njia/releases/download/demo-v1/Njia-Dhruzzz.pptx |
 | Live prototype | https://gomycode-2026.vercel.app |
 | Release page | https://github.com/Eeshan-Vaghjiani/njia/releases/tag/demo-v1 |
 
-These are the final handoff locations. Asset generation and main-workflow upload status do not themselves confirm anonymous access to the updated files.
+Open these published links signed out during the final review.
 
 ## Form coverage
 
 The draft contains all **20 required fields**, in order: country; ONLINE; team; leader name; leader email instruction; project title; full roster; summary **≤150 words**; problem; features; technologies; source; presentation; video; next step; partner selections; **Click Mobile primary**; four award explanations; AI/tool disclosure; final confirmation.
 
-The form requests URLs rather than file uploads. A hosted PDF can be the presentation URL. No separate member-email list, project-card upload, live-app field or Docker field is required; project-detail answers supply the project-card details. Do not select “Country podium only” alongside partner awards. Eligibility remains subject to organizer participation records; prize preference does not guarantee an award.
+The form requests URLs rather than file uploads. A hosted PDF can be the presentation URL. It now also offers **four optional fields**: screenshot/cover/logo URL, live demo URL, testing/results/limitations, and responsible AI/data; suggested answers are in the draft. No separate member-contact list, project-card upload or Docker field is required. Do not select “Country podium only” alongside partner awards. Eligibility remains subject to organizer participation records; prize preference does not guarantee an award.
 
 ## Sources
 
@@ -51,5 +51,5 @@ The form requests URLs rather than file uploads. A hosted PDF can be the present
 
 ## Last steps — human review and form submission only
 
-- [ ] **Human final review:** after main completes publication, open source/PDF/video signed out, verify the final source and updated eight-page deck/exact-90-second coach recording, and review all 20 answers. Confirm roster/registration details, enter the leader email privately, retain Click Mobile as primary with all four partner selections, and check the final confirmation only when the deliverables are accessible and final.
+- [ ] **Human final review:** open source/PDF/video signed out, verify the eight-page deck/exact-90-second coach recording, and review all 20 required answers plus the optional evidence. Confirm roster/registration details, enter the leader contact information privately, retain Click Mobile as primary with all four partner selections, and check the final confirmation when the deliverables are accessible and final.
 - [ ] **Human form submission:** submit the [official form](https://docs.google.com/forms/d/e/1FAIpQLSebmyKeBPv2mrmy4T_wI2_z9SBjjSTZ-O-_ewiWs6PBEikRjw/viewform) once before **19:30 EAT** and save the receipt. **Not submitted at this handoff.**

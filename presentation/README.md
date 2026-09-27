@@ -15,7 +15,7 @@ assets or model calls are required to build these files.
 - `validation.json` — file sizes and structural validation results.
 
 ## Current production evidence
-72 backend test methods passed (main implementation owner confirmation), distinct from
+73 backend test methods passed (main implementation owner confirmation), distinct from
 57 new public assertions: 48 acceptance + 9 recording, verified from the local JSON artifacts.
 Real Groq / openai/gpt-oss-20b: 2.259s desktop, 1.318s mobile, 2.260s recording including PDF.
 Individual observations, not a performance benchmark. No JavaScript errors in these runs.
@@ -26,11 +26,9 @@ CV rewrites checked for numbers/tools, still require human factual review. The r
 contains unsupported “real-time sales monitoring” in a rewrite. The checks do not guarantee
 semantic factuality. The deck's before/after example is illustrative and human-reviewed.
 
-## Remaining release update
-The new local demo is exactly 90 seconds. Upload/replace `njia-demo-90s.webm` in the
-`demo-v1` GitHub release and verify the public asset URL. Slide 8 links to that exact
-asset destination and labels the release upload pending. No production-validation update
-is outstanding for the results stated in this deck.
+## Published demo
+The production demo is exactly 90 seconds. Slide 8 links to the published `demo-v1` asset:
+https://github.com/Eeshan-Vaghjiani/njia/releases/download/demo-v1/njia-demo-90s.webm
 
 Illustrative persona, CV output and phone panels are explicitly labeled. The pilot is a plan,
 not adoption. The dataset is a 2023 historical sample, not current vacancies. CV transfer to

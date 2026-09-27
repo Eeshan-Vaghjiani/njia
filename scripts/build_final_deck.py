@@ -11,10 +11,12 @@ import collections
 import html
 import json
 import math
+import re
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "presentation"
 STEM = "Njia-Dhruzzz"
+DEMO_URL = "https://github.com/Eeshan-Vaghjiani/njia/releases/download/demo-v1/njia-demo-90s.webm"
 NAVY = "14283F"
 IVORY = "F7F4EC"
 ORANGE = "F27B43"
@@ -74,7 +76,7 @@ def build_content():
         assert flow["response"]["advisor"]["mode"] == "groq"
         assert flow["response"]["advisor"]["model"] == "openai/gpt-oss-20b"
     (OUT / "production-evidence.json").write_text(json.dumps({
-        "backend_tests_passed": 72, "backend_count_source": "Main implementation owner confirmation",
+        "backend_tests_passed": 73, "backend_count_source": "Main implementation owner confirmation",
         "public_acceptance_assertions": 48, "recording_assertions": 9, "public_total": 57,
         "provider": "Groq", "model": "openai/gpt-oss-20b",
         "observed_seconds": {"desktop": 2.259, "mobile": 1.318, "recording_with_pdf": 2.260},
@@ -208,10 +210,10 @@ def build_content():
 
     s = slide("06  /  Evidence & honest limits", "A working product. Evidence you can inspect.",
               "Real public Groq calls · synthetic CVs · strengths, rewrites, seven-day plans and tailored interview questions.",
-              notes="Main implementation owner confirms 72 passing backend unit-test methods. Separately, coach-acceptance-results.json records 48 passing public acceptance assertions and njia-coach-demo-results.json records nine passing recording assertions, totaling 57 new public assertions. No mocked responses. Desktop, mobile and recording used Groq openai/gpt-oss-20b. Observed elapsed times were 2.259 seconds desktop, 1.318 mobile and 2.260 recording including PDF processing; these are individual observations, not a latency benchmark. All three runs recorded no JavaScript errors and all observed API responses succeeded. The sample used 391 Kenya Data Analyst postings and returned 39.6% demand-weighted coverage, not hiring odds. Recording is exactly 90 seconds at normal speed. Semantic factuality is not guaranteed: the recorded rewrite added unsupported real-time sales monitoring, despite number/tool checks. Human review is required. No real-user adoption or employment impact is claimed.")
+              notes="Main implementation owner confirms 73 passing backend unit-test methods. Separately, coach-acceptance-results.json records 48 passing public acceptance assertions and njia-coach-demo-results.json records nine passing recording assertions, totaling 57 new public assertions. No mocked responses. Desktop, mobile and recording used Groq openai/gpt-oss-20b. Observed elapsed times were 2.259 seconds desktop, 1.318 mobile and 2.260 recording including PDF processing; these are individual observations, not a latency benchmark. All three runs recorded no JavaScript errors and all observed API responses succeeded. The sample used 391 Kenya Data Analyst postings and returned 39.6% demand-weighted coverage, not hiring odds. Recording is exactly 90 seconds at normal speed. Semantic factuality is not guaranteed: the recorded rewrite added unsupported real-time sales monitoring, despite number/tool checks. Human review is required. No real-user adoption or employment impact is claimed.")
     box(s, 76, 372, 666, 241, NAVY, 12)
     label(s, "PASSED / TWO DISTINCT TEST LAYERS", 106, 395, 600, PALE)
-    text(s, "72", 106, 443, 270, 98, 82, IVORY, True, True)
+    text(s, "73", 106, 443, 270, 98, 82, IVORY, True, True)
     text(s, "57", 435, 443, 270, 98, 82, ORANGE, True, True)
     text(s, "backend tests", 110, 549, 290, 36, 25, PALE)
     text(s, "public assertions", 439, 547, 276, 33, 24, PALE)
@@ -247,7 +249,7 @@ def build_content():
          108, 757, 1384, 28, 20, PALE)
 
     s = slide("08  /  Team Dhruzzz", "Turn experience into a clearer path.", dark=True,
-              notes="Close with the live product and source repository. Team: Eeshan Vaghjiani, Bhavin Mepani and Dhruvin Bhudia; Kenya ONLINE. The new recorded production demo is verified locally at exactly 90 seconds, normal speed, with captions. Slide 8 links to the expected demo-v1 release asset njia-demo-90s.webm; upload of the updated asset is pending confirmation. Ask for a Kenyan learner or training partner to run the proposed pilot.")
+              notes=f"Close with the live product and source repository. Team: Eeshan Vaghjiani, Bhavin Mepani and Dhruvin Bhudia; Kenya ONLINE. The new recorded production demo is verified locally at exactly 90 seconds, normal speed, with captions. Slide 8 links to the published demo-v1 release asset: {DEMO_URL}. Ask for a Kenyan learner or training partner to run the proposed pilot.")
     text(s, "Njia", 76, 281, 680, 133, 109, IVORY, True, True)
     text(s, "Your evidence. Your market. Your next seven days.", 80, 425, 1415, 69, 39, ORANGE, serif=True)
     label(s, "KENYA · ONLINE", 80, 532, 600, PALE)
@@ -256,7 +258,7 @@ def build_content():
     for y, tag, display, url in [
         (552, "LIVE", "gomycode-2026.vercel.app", "https://gomycode-2026.vercel.app"),
         (626, "SOURCE", "github.com/Eeshan-Vaghjiani/njia", "https://github.com/Eeshan-Vaghjiani/njia"),
-        (700, "90-SECOND DEMO", "njia-demo-90s.webm · release upload pending", "https://github.com/Eeshan-Vaghjiani/njia/releases/download/demo-v1/njia-demo-90s.webm")]:
+        (700, "90-SECOND DEMO", "njia-demo-90s.webm · published", DEMO_URL)]:
         label(s, tag, 827, y, 630)
         text(s, display, 827, y + 30, 669, 38, 22 if tag == "90-SECOND DEMO" else 24, IVORY, link=url)
     text(s, "Pilot invitation: Kenyan learners + training partners", 80, 768, 690, 37, 24, PALE)
@@ -373,9 +375,28 @@ def validate():
     assert len(prs.slides) == len(pdf) == 8
     slide_text = "\n".join(shape.text for s in prs.slides for shape in s.shapes if shape.has_text_frame)
     pdf_text = "\n".join(p.get_text() for p in pdf)
-    for value in ["Dhruzzz", "Eeshan Vaghjiani", "Bhavin Mepani", "Dhruvin Bhudia", "18,371", "1,326", "391", "57", "72", "39.6%", "2.259s", "1.318s", "2.260s"]:
+    for value in ["Dhruzzz", "Eeshan Vaghjiani", "Bhavin Mepani", "Dhruvin Bhudia", "18,371", "1,326", "391", "57", "73", "48 acceptance + 9 recording", "39.6%", "2.259s", "1.318s", "2.260s"]:
         assert value.casefold() in slide_text.casefold(), value
         assert value.casefold() in pdf_text.casefold(), value
+    notes_text = "\n".join(s.notes_slide.notes_text_frame.text for s in prs.slides)
+    supporting_text = "\n".join((OUT / name).read_text(encoding="utf-8") for name in
+                                ["speaker-notes.md", "README.md", "production-evidence.json"])
+    for content in [slide_text, pdf_text, notes_text, supporting_text]:
+        assert not re.search(r"\b72\b", content), "Stale backend test count"
+        assert "pending" not in content.casefold(), "Stale release status"
+    evidence = json.loads((OUT / "production-evidence.json").read_text(encoding="utf-8"))
+    assert evidence["backend_tests_passed"] == 73
+    assert (evidence["public_acceptance_assertions"], evidence["recording_assertions"], evidence["public_total"]) == (48, 9, 57)
+    assert evidence["public_acceptance_assertions"] + evidence["recording_assertions"] == evidence["public_total"]
+    assert "human factual review required" in evidence["factual_limit"].casefold()
+    assert "Semantic factuality is not guaranteed" in notes_text
+    pptx_links = [r.hyperlink.address for shape in prs.slides[7].shapes if shape.has_text_frame
+                  for p in shape.text_frame.paragraphs for r in p.runs]
+    assert DEMO_URL in pptx_links
+    assert DEMO_URL in [link.get("uri") for link in pdf[7].get_links()]
+    html_text = (OUT / f"{STEM}.html").read_text(encoding="utf-8")
+    assert f'href="{DEMO_URL}"' in html_text
+    assert "pending" not in html_text.casefold()
     for slide_index, s in enumerate(prs.slides):
         assert s.notes_slide.notes_text_frame.text.strip()
         for shape in s.shapes:
@@ -399,8 +420,10 @@ def validate():
                   pptx_bytes=(OUT / f"{STEM}.pptx").stat().st_size,
                   pdf_bytes=(OUT / f"{STEM}.pdf").stat().st_size,
                   checks=["Slide/page count", "Required content in PPTX and PDF", "PPTX shape bounds",
-                          "Speaker notes on all slides", "PDF searchable text", "PDF aspect ratio"],
-                  advisor_validation="72 backend tests confirmed by main owner; 48 public acceptance + 9 recording assertions verified from artifacts; human factual review required")
+                          "Speaker notes on all slides", "PDF searchable text", "PDF aspect ratio",
+                          "73 backend tests; 57 public assertions = 48 + 9", "No stale count or pending release text",
+                          "Published demo URL in PPTX, PDF and HTML", "Human factual-review caveat retained"],
+                  advisor_validation="73 backend tests confirmed by main owner; 48 public acceptance + 9 recording assertions verified from artifacts; human factual review required")
     (OUT / "validation.json").write_text(json.dumps(result, indent=2), encoding="utf-8")
     print(json.dumps(result, indent=2))
 
@@ -441,7 +464,7 @@ assets or model calls are required to build these files.
 - `validation.json` — file sizes and structural validation results.
 
 ## Current production evidence
-72 backend test methods passed (main implementation owner confirmation), distinct from
+73 backend test methods passed (main implementation owner confirmation), distinct from
 57 new public assertions: 48 acceptance + 9 recording, verified from the local JSON artifacts.
 Real Groq / openai/gpt-oss-20b: 2.259s desktop, 1.318s mobile, 2.260s recording including PDF.
 Individual observations, not a performance benchmark. No JavaScript errors in these runs.
@@ -452,11 +475,9 @@ CV rewrites checked for numbers/tools, still require human factual review. The r
 contains unsupported “real-time sales monitoring” in a rewrite. The checks do not guarantee
 semantic factuality. The deck's before/after example is illustrative and human-reviewed.
 
-## Remaining release update
-The new local demo is exactly 90 seconds. Upload/replace `njia-demo-90s.webm` in the
-`demo-v1` GitHub release and verify the public asset URL. Slide 8 links to that exact
-asset destination and labels the release upload pending. No production-validation update
-is outstanding for the results stated in this deck.
+## Published demo
+The production demo is exactly 90 seconds. Slide 8 links to the published `demo-v1` asset:
+https://github.com/Eeshan-Vaghjiani/njia/releases/download/demo-v1/njia-demo-90s.webm
 
 Illustrative persona, CV output and phone panels are explicitly labeled. The pilot is a plan,
 not adoption. The dataset is a 2023 historical sample, not current vacancies. CV transfer to
