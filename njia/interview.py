@@ -615,15 +615,15 @@ async def interview_feedback(body: FeedbackRequest):
     if len(answer) < 20:
         raise HTTPException(422, "Write at least 20 characters for your practice answer.")
     fallback = {"mode": "checklist", "model": None, **checklist_feedback(question, answer), "note": CHECKLIST_NOTE}
-    if not groq_client.configured():
+    if not (groq_client.configured() or groq_client.nvidia_key()):
         return fallback
     payload = {"role": body.role, "question": question, "answer": answer, "evidence": evidence}
     try:
-        content, _message, model = await groq_client.chat(
+        content, message, model = await groq_client.chat(
             [{"role": "system", "content": FEEDBACK_PROMPT}, {"role": "user", "content": json.dumps(payload)}],
             json_mode=True, max_tokens=1500, timeout=30.0,
         )
         result = validate_feedback(content, f"{answer}\n{evidence}")
     except (groq_client.ProviderError, ValueError, KeyError, TypeError, RecursionError):
         return fallback
-    return {"mode": "groq", "model": model, **result, "note": GROQ_NOTE}
+    return {"mode": groq_client.provider(message), "model": model, **result, "note": GROQ_NOTE}

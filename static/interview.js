@@ -138,10 +138,10 @@
     if (state.submitting) { box.innerHTML = '<p class="status iq-status" data-busy="true">Reviewing your answer…</p>'; return; }
     const f = state.feedback; if (!f) { box.innerHTML = ""; return; }
     const score = Number.isInteger(f.score) && f.score >= 1 && f.score <= 5 ? f.score : null;
-    const ai = f.mode === "groq";
+    const ai = !!f.mode && f.mode !== "checklist";
     const items = (values) => list(values).length ? `<ul>${list(values).map((v) => `<li>${esc(v)}</li>`).join("")}</ul>` : '<p class="muted">None noted.</p>';
     box.innerHTML = `<article class="feedback-card">
-      <div class="provenance"><span class="badge mode">${ai ? "AI feedback" : "Checklist feedback · no AI"}</span><span class="badge">Model: ${esc(f.model || (ai ? "not supplied" : "none (checklist)"))}</span></div>
+      <div class="provenance"><span class="badge mode">${ai ? (f.mode === "nvidia" ? "AI feedback · NVIDIA fallback" : "AI feedback") : "Checklist feedback · no AI"}</span><span class="badge">Model: ${esc(f.model || (ai ? "not supplied" : "none (checklist)"))}</span></div>
       <div class="score-line"><strong class="score-value">${score ? `${score} / 5` : "Score unavailable"}</strong>${score ? `<span class="score-dots" role="img" aria-label="${score} out of 5">${[1, 2, 3, 4, 5].map((n) => `<span class="${n <= score ? "on" : ""}"></span>`).join("")}</span>` : ""}</div>
       <p class="verdict">${esc(f.verdict)}</p>
       <ul class="star-list" aria-label="STAR checklist">${STAR.map(([key, name]) => { const ok = f.star?.[key] === true; return `<li class="${ok ? "yes" : "no"}"><span aria-hidden="true">${ok ? "✓" : "✗"}</span> ${name}<span class="sr-only">${ok ? " present" : " missing"}</span></li>`; }).join("")}</ul>

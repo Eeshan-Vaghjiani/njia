@@ -52,6 +52,8 @@ The app loads a root `.env` when present; use `.env.example` as a reference. For
 ```dotenv
 GROQ_API_KEY=your_server_side_key
 GROQ_MODEL=openai/gpt-oss-20b
+# Optional backup for questions, brief and feedback if Groq fails (free key from build.nvidia.com):
+NVIDIA_API_KEY=your_server_side_nvapi_key
 ```
 
 `NJIA_ADVISOR_MODEL`, if set, overrides the advisor model. Without a Groq key, the coach uses curated fallback and still requires consent. `NJIA_AI_PROVIDER=offline` controls only the older `/classic` planning flow; it does not disable the new advisor. Installation and hosted inference need network access.
@@ -71,7 +73,7 @@ These are engineering checks, not independent model-accuracy or employment-outco
 
 ## Privacy and limitations
 
-- **Consented CV text goes to Groq** (follow-up questions and the brief). Basic contact scrubbing is best effort, not anonymization; names, employers and other identifying details may remain. Remove sensitive details before consenting. Practice answers go to Groq only with their own consent checkbox.
+- **Consented CV text goes to Groq** (follow-up questions and the brief). If Groq fails and `NVIDIA_API_KEY` is configured, the same request goes once to the same open-weight model (`openai/gpt-oss-20b`) on the NVIDIA API Catalog, and the brief is labelled `nvidia`. Basic contact scrubbing is best effort, not anonymization; names, employers and other identifying details may remain. Remove sensitive details before consenting. Practice answers go to the AI provider only with their own consent checkbox.
 - **Web searches never receive CV text.** Live-job and interview-question searches send only the role, country and top market skill names to Groq's built-in browser search (powered by Exa). Results are cached in server memory per role/country (Himalayas 1 h, web jobs 12 h, interview questions 24 h), because one browser search can use ~90K Groq tokens.
 - **Live postings are third-party listings.** Njia shows only postings open to your country according to the listing, links to the source (Himalayas credited as required) and drops web results whose link can't be found in the search results. It does not verify employers, deadlines or eligibility beyond the listing. A found source proves the search returned that page, not that every word is quoted exactly. Confirm each posting on the source site before applying. Match % is skill overlap with the skills Njia can detect in the posting, not a hiring probability.
 - Uploads are parsed on the hosting server. The app uses request/browser memory with **no application-level CV storage**, accounts, analytics or user database. This does not describe hosting/Groq retention or guarantee secure erasure. Downloads remain on the user’s device.
@@ -82,7 +84,7 @@ These are engineering checks, not independent model-accuracy or employment-outco
 
 ## Stack and documentation
 
-Python/FastAPI, static HTML/CSS/JavaScript, Groq (`openai/gpt-oss-20b`, JSON mode and built-in `browser_search`), the Himalayas public jobs API, scikit-learn historical retrieval, unittest and Playwright; hosted on Vercel. OpenCode assisted coding, documentation and review. The eight-page deck was generated locally with python-pptx and Playwright. See the disclosure for actual AI use and boundaries.
+Python/FastAPI, static HTML/CSS/JavaScript, Groq (`openai/gpt-oss-20b`, JSON mode and built-in `browser_search`), the NVIDIA API Catalog as an optional backup running the same `openai/gpt-oss-20b`, the Himalayas public jobs API, scikit-learn historical retrieval, unittest and Playwright; hosted on Vercel. OpenCode assisted coding, documentation and review. The eight-page deck was generated locally with python-pptx and Playwright. See the disclosure for actual AI use and boundaries.
 
 - [Deployment](docs/DEPLOYMENT.md) · [AI and data disclosure](docs/AI_DISCLOSURE.md)
 - [Submission answers](docs/SUBMISSION_DRAFT.md) · [Final checklist](docs/FINAL_CHECKLIST.md) · [Official requirements](docs/HACKATHON_REQUIREMENTS.md)

@@ -62,7 +62,7 @@
         </fieldset>
         <div class="consent-block">
           <label class="check-label" for="consent"><input id="consent" type="checkbox" aria-describedby="consent-help"><span>I agree to send my CV text, with basic contact redaction, to the AI provider for career advice. Review/remove personal details first.</span></label>
-          <p id="consent-help" class="hint">For uploads, this also permits server processing of the file. Basic redaction is not full anonymisation. Optional preview only reads the file; you’ll agree again before AI advice.</p>
+          <p id="consent-help" class="hint">For uploads, this also permits server processing of the file. Basic redaction is not full anonymisation. Optional preview only reads the file; you’ll agree again before AI advice. The AI provider is Groq; if Groq is unavailable, the same model on NVIDIA’s API may be used instead.</p>
         </div>
         <section id="followup-panel" class="followup-panel" aria-labelledby="followup-title" hidden>
           <p class="eyebrow">BEFORE YOUR BRIEF</p>
@@ -75,7 +75,7 @@
         <div id="status" class="status" role="status" aria-live="polite" aria-atomic="true" hidden></div>
         <div id="error-panel" class="error-panel" role="alert" hidden><p id="error-message"></p><div class="inline-actions"><button id="retry" type="button" class="secondary-button">Try again</button><button id="market-fallback" type="button" class="text-button" hidden>Use market evidence only</button></div></div>
         <div class="submit-bar"><button id="build-brief" class="primary-button" type="submit"><span>Build my career brief</span><span aria-hidden="true">↗</span></button><button id="cancel-request" class="text-button" type="button" hidden>Cancel request</button></div>
-        <p class="input-footnote">No account or application CV storage. With your consent, redacted CV text is sent to Groq. Prefer no AI? <a href="/classic">Use the manual skills tool.</a></p>
+        <p class="input-footnote">No account or application CV storage. With your consent, redacted CV text is sent to Groq (or NVIDIA’s API as a backup). Prefer no AI? <a href="/classic">Use the manual skills tool.</a></p>
       </form>
       <div class="metadata-note"><span id="service-note">Connecting to Njia…</span><button id="retry-meta" class="text-button" type="button" hidden>Reconnect</button></div>
     </section>

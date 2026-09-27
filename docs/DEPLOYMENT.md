@@ -35,6 +35,9 @@ Vercel reads pinned dependencies from `pyproject.toml`, which specifies Python `
 | `GROQ_API_KEY` | Server-held secret; configure in Vercel environment settings |
 | `GROQ_MODEL` | `openai/gpt-oss-20b` |
 | `NJIA_ADVISOR_MODEL` | Optional advisor override; otherwise uses `GROQ_MODEL` |
+| `NJIA_SEARCH_MODEL` | Optional; web research model, default `openai/gpt-oss-120b` (separate free-tier token bucket) |
+| `NVIDIA_API_KEY` | Optional server-held secret from build.nvidia.com; enables the NVIDIA API Catalog backup for questions, brief and feedback |
+| `NJIA_FALLBACK_MODEL` | Optional; NVIDIA backup model, default `openai/gpt-oss-20b` |
 | `NJIA_AI_PROVIDER` | `groq` for optional classic plan rewriting |
 | `NJIA_PUBLIC_ORIGINS` | `https://gomycode-2026.vercel.app` |
 | `OPENBLAS_NUM_THREADS` | `1` |

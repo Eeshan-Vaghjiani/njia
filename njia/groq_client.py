@@ -18,8 +18,13 @@ from . import engine
 load_dotenv(engine.ROOT / ".env")
 
 GROQ_ENDPOINT = "https://api.groq.com/openai/v1/chat/completions"
+NVIDIA_ENDPOINT = "https://integrate.api.nvidia.com/v1/chat/completions"
 DEFAULT_MODEL = "openai/gpt-oss-20b"
 DEFAULT_SEARCH_MODEL = "openai/gpt-oss-120b"
+# Same open-weight model as the Groq default, so prompts and validation carry over.
+DEFAULT_FALLBACK_MODEL = "openai/gpt-oss-20b"
+FALLBACK_TIMEOUT = 30.0
+PROVIDER_KEY = "_njia_provider"
 MAX_RESPONSE_BYTES = 512 * 1024
 URL_PATTERN = re.compile(r"https?://[^\s<>\"'()\[\]{}|\\^`]+", re.I)
 BROWSER_SEARCH = [{"type": "browser_search"}]
@@ -45,6 +50,20 @@ def search_model() -> str:
     a different model than the CV brief to keep searches from exhausting it.
     """
     return os.getenv("NJIA_SEARCH_MODEL", "").strip() or DEFAULT_SEARCH_MODEL
+
+
+def nvidia_key() -> str:
+    return os.getenv("NVIDIA_API_KEY", "").strip()
+
+
+def fallback_model() -> str:
+    """NVIDIA API Catalog model used when Groq fails a JSON (non-tool) call."""
+    return os.getenv("NJIA_FALLBACK_MODEL", "").strip() or DEFAULT_FALLBACK_MODEL
+
+
+def provider(message) -> str:
+    """Which provider produced a completion returned by ``chat``: "groq" or "nvidia"."""
+    return message.get(PROVIDER_KEY, "groq") if isinstance(message, dict) else "groq"
 
 
 def _unique_object(pairs):
@@ -136,17 +155,37 @@ async def chat(messages, *, json_mode=True, tools=None, tool_choice="required", 
     Tool calls default to temperature 1.0 (Groq's browser-search setting); at low
     temperature gpt-oss-120b produced unparseable tool calls. JSON calls use 0.2.
     ``model`` overrides the configured advisor model (e.g. ``search_model()``).
+    If Groq fails a non-tool call and ``NVIDIA_API_KEY`` is set, one request goes
+    to the NVIDIA API Catalog (``fallback_model()``); ``provider(message)`` then
+    reports "nvidia". Tool calls never fall back (NVIDIA has no built-in search).
     Raises ProviderError for a missing key, transport/HTTP errors, oversized or
     malformed envelopes, credential echoes, and incomplete or empty output.
     """
     key = os.getenv("GROQ_API_KEY", "").strip()
-    if not key:
-        raise ProviderError("Groq API key missing")
-    model = model or model_name()
+    backup = "" if tools else nvidia_key()
     if temperature is None:
         temperature = 1.0 if tools else 0.2
+    request = dict(messages=messages, json_mode=json_mode, tools=tools, tool_choice=tool_choice,
+                   max_tokens=max_tokens, temperature=temperature, reasoning_effort=reasoning_effort)
+    if key:
+        try:
+            return await _complete(GROQ_ENDPOINT, key, model or model_name(), "max_completion_tokens",
+                                   timeout=timeout, **request)
+        except ProviderError:
+            if not backup:
+                raise
+    elif not backup:
+        raise ProviderError("Groq API key missing")
+    content, message, actual = await _complete(NVIDIA_ENDPOINT, backup, fallback_model(), "max_tokens",
+                                               timeout=min(timeout, FALLBACK_TIMEOUT), **request)
+    message[PROVIDER_KEY] = "nvidia"
+    return content, message, actual
+
+
+async def _complete(endpoint, key, model, tokens_field, *, messages, json_mode, tools, tool_choice,
+                    max_tokens, timeout, temperature, reasoning_effort):
     payload = {"model": model, "stream": False, "temperature": temperature,
-               "max_completion_tokens": max_tokens, "messages": messages}
+               tokens_field: max_tokens, "messages": messages}
     if reasoning_effort and model.startswith("openai/gpt-oss-"):
         payload["reasoning_effort"] = reasoning_effort
     if tools:
@@ -158,7 +197,7 @@ async def chat(messages, *, json_mode=True, tools=None, tool_choice="required", 
     try:
         async with asyncio.timeout(timeout):
             async with httpx.AsyncClient(timeout=timeout, trust_env=False, follow_redirects=False) as client:
-                async with client.stream("POST", GROQ_ENDPOINT, headers={"Authorization": f"Bearer {key}"},
+                async with client.stream("POST", endpoint, headers={"Authorization": f"Bearer {key}"},
                                          json=payload) as response:
                     response.raise_for_status()
                     body = bytearray()
@@ -186,4 +225,4 @@ async def chat(messages, *, json_mode=True, tools=None, tool_choice="required", 
             raise ValueError("Invalid provider model")
         return content, message, actual.strip()
     except (httpx.HTTPError, TimeoutError, ValueError, KeyError, TypeError, RecursionError, UnicodeDecodeError):
-        raise ProviderError("Groq unavailable or returned an invalid response") from None
+        raise ProviderError("AI provider unavailable or returned an invalid response") from None

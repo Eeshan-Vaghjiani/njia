@@ -110,7 +110,7 @@
   }
   function showFollowup(data, selected, text) {
     state.followup = {target:selected, text, questions:data.questions};
-    $("followup-mode").innerHTML = data.mode === "groq" ? `<span class="badge">AI questions · ${esc(data.model || "model not supplied")}</span>` : '<span class="badge">Curated questions · AI unavailable</span>';
+    $("followup-mode").innerHTML = data.mode && data.mode !== "curated" ? `<span class="badge">AI questions · ${esc(data.model || "model not supplied")}${data.mode === "nvidia" ? " · NVIDIA fallback" : ""}</span>` : '<span class="badge">Curated questions · AI unavailable</span>';
     $("followup-mode").title = data.note || "";
     const total = data.questions.length;
     $("followup-questions").innerHTML = data.questions.map((q, index) => {

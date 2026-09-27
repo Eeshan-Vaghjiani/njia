@@ -12,7 +12,7 @@ import re
 import httpx
 from dotenv import load_dotenv
 
-from . import engine
+from . import engine, groq_client
 
 load_dotenv(engine.ROOT / ".env")
 
@@ -357,7 +357,8 @@ async def assess_cv(text: str, country: str, role: str, answers=None) -> dict:
 
     Raises ValueError for invalid inputs (CV: 10..15000 characters; country/role:
     1..80). Main owns consent and country/role membership validation. At most one
-    Groq request is made, with a 45-second total deadline and no redirects/retries.
+    Groq request is made (45-second deadline, no redirects/retries), plus one
+    NVIDIA API Catalog request (30 seconds) only if Groq fails and NVIDIA_API_KEY is set.
     Optional ``answers`` are self-reported follow-up replies (see njia.questions).
     """
     if not isinstance(text, str) or len(text) > MAX_CV_CHARS or len(text.strip()) < 10:
@@ -375,10 +376,11 @@ async def assess_cv(text: str, country: str, role: str, answers=None) -> dict:
     # Include every retained lexicon match even when a future vocabulary grows.
     allowed = list(dict.fromkeys([*allowed, *matched, *(item["skill"] for item in answers if item["skill"])]))
     key = os.getenv("GROQ_API_KEY", "").strip()
+    backup_key = groq_client.nvidia_key()
     used = [item["skill"] for item in answers if item["type"] == "skill" and item["answer"] in USED_OPTIONS]
     fallback = lambda reason: _apply_answers(
         _curated(cv, role, matched, top, reason, [*matched, *used] if answers else None), answers, curated=True)
-    if not key:
+    if not key and not backup_key:
         return fallback("Groq API key missing; a curated assessment is provided.")
     model = (os.getenv("NJIA_ADVISOR_MODEL", "").strip()
              or os.getenv("GROQ_MODEL", "").strip() or GROQ_DEFAULT_MODEL)
@@ -391,13 +393,14 @@ async def assess_cv(text: str, country: str, role: str, answers=None) -> dict:
         context["candidate_answers"] = answers
     system = SYSTEM_PROMPT + ANSWERS_PROMPT if answers else SYSTEM_PROMPT
     answer_text = "\n".join(item["answer"] for item in answers if item["type"] == "detail")
-    try:
-        async with asyncio.timeout(45):
-            async with httpx.AsyncClient(timeout=45, trust_env=False, follow_redirects=False) as client:
-                async with client.stream("POST", GROQ_ENDPOINT, headers={"Authorization": f"Bearer {key}"}, json={
+
+    async def attempt(endpoint, secret, model, tokens_field, deadline):
+        async with asyncio.timeout(deadline):
+            async with httpx.AsyncClient(timeout=deadline, trust_env=False, follow_redirects=False) as client:
+                async with client.stream("POST", endpoint, headers={"Authorization": f"Bearer {secret}"}, json={
                     "model": model, "stream": False, "temperature": 0.2,
                     **({"reasoning_effort": "low"} if model.startswith("openai/gpt-oss-") else {}),
-                    "max_completion_tokens": 3500, "response_format": {"type": "json_object"},
+                    tokens_field: 3500, "response_format": {"type": "json_object"},
                     "messages": [{"role": "system", "content": system},
                                  {"role": "user", "content": json.dumps(context)}],
                 }) as response:
@@ -416,10 +419,24 @@ async def assess_cv(text: str, country: str, role: str, answers=None) -> dict:
         choice = choices[0]
         if choice.get("finish_reason") != "stop" or not isinstance(choice.get("message"), dict):
             raise ValueError("Incomplete completion")
-        result = _validate(choice["message"].get("content"), cv, set(allowed), key, answer_text)
+        result = _validate(choice["message"].get("content"), cv, set(allowed), secret, answer_text)
         actual_model = _text(envelope.get("model", model), 200)
-        if key in actual_model:
+        if secret in actual_model:
             raise ValueError("Invalid provider model")
-        return _apply_answers({"mode": "groq", "model": actual_model, **result}, answers)
-    except (httpx.HTTPError, TimeoutError, ValueError, KeyError, TypeError, RecursionError):
-        return fallback("Groq unavailable or returned an invalid assessment; a curated assessment is provided.")
+        return actual_model, result
+
+    errors = (httpx.HTTPError, TimeoutError, ValueError, KeyError, TypeError, RecursionError)
+    if key:
+        try:
+            actual_model, result = await attempt(GROQ_ENDPOINT, key, model, "max_completion_tokens", 45)
+            return _apply_answers({"mode": "groq", "model": actual_model, **result}, answers)
+        except errors:
+            if not backup_key:
+                return fallback("Groq unavailable or returned an invalid assessment; a curated assessment is provided.")
+    try:
+        # Same open-weight model on the NVIDIA API Catalog, so validation is unchanged.
+        actual_model, result = await attempt(groq_client.NVIDIA_ENDPOINT, backup_key, groq_client.fallback_model(),
+                                             "max_tokens", groq_client.FALLBACK_TIMEOUT)
+        return _apply_answers({"mode": "nvidia", "model": actual_model, **result}, answers)
+    except errors:
+        return fallback("Groq and the NVIDIA fallback were unavailable or returned invalid assessments; a curated assessment is provided.")

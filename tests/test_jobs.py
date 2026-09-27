@@ -39,7 +39,7 @@ class LiveJobsTests(unittest.TestCase):
         self.payload = {"country": "Kenya", "role": "Data Analyst", "skills": ["sql", "excel"], "source": "remote"}
         self.himalayas = {"totalCount": 111, "jobs": []}
         self.groq = None
-        self.environment = patch.dict(os.environ, {"GROQ_API_KEY": "jobs-test-secret", "GROQ_MODEL": "", "NJIA_ADVISOR_MODEL": ""})
+        self.environment = patch.dict(os.environ, {"NVIDIA_API_KEY": "", "GROQ_API_KEY": "jobs-test-secret", "GROQ_MODEL": "", "NJIA_ADVISOR_MODEL": ""})
         self.environment.start()
         self.addCleanup(self.environment.stop)
 
@@ -239,7 +239,7 @@ class LiveJobsTests(unittest.TestCase):
         self.assertIn("Web search could not be reached", " ".join(response.json()["notes"]))
         self.assertNotIn("PROVIDER-SECRET-BODY", response.text)
         self.calls.clear()
-        with patch.dict(os.environ, {"GROQ_API_KEY": ""}):
+        with patch.dict(os.environ, {"NVIDIA_API_KEY": "", "GROQ_API_KEY": ""}):
             data = self.post(source="web").json()
         self.assertEqual(data["jobs"], [])
         self.assertEqual(data["status"], "not_configured")

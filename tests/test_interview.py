@@ -42,7 +42,7 @@ RESULTS = [
 
 class InterviewTests(unittest.TestCase):
     def setUp(self):
-        self.environment = patch.dict(os.environ, {"GROQ_API_KEY": SECRET, "GROQ_MODEL": "", "NJIA_ADVISOR_MODEL": ""})
+        self.environment = patch.dict(os.environ, {"NVIDIA_API_KEY": "", "GROQ_API_KEY": SECRET, "GROQ_MODEL": "", "NJIA_ADVISOR_MODEL": ""})
         self.environment.start()
         self.addCleanup(self.environment.stop)
         interview._cache.clear()
@@ -138,7 +138,7 @@ class InterviewTests(unittest.TestCase):
         self.assertNotIn(SECRET, json.dumps(data))
 
     def test_missing_key_uses_curated_bank_without_http(self):
-        with patch.dict(os.environ, {"GROQ_API_KEY": ""}), patch("njia.groq_client.httpx.AsyncClient") as client:
+        with patch.dict(os.environ, {"NVIDIA_API_KEY": "", "GROQ_API_KEY": ""}), patch("njia.groq_client.httpx.AsyncClient") as client:
             data = self.client.post("/api/interview/questions", json={"country": "Kenya", "role": "Data Engineer"}).json()
             client.assert_not_called()
         self.assert_curated(data, "Data Engineer")
@@ -185,7 +185,7 @@ FEEDBACK = {
 
 class FeedbackTests(unittest.TestCase):
     def setUp(self):
-        self.environment = patch.dict(os.environ, {"GROQ_API_KEY": SECRET, "GROQ_MODEL": "", "NJIA_ADVISOR_MODEL": ""})
+        self.environment = patch.dict(os.environ, {"NVIDIA_API_KEY": "", "GROQ_API_KEY": SECRET, "GROQ_MODEL": "", "NJIA_ADVISOR_MODEL": ""})
         self.environment.start()
         self.addCleanup(self.environment.stop)
         self.client = TestClient(app)
@@ -259,7 +259,7 @@ class FeedbackTests(unittest.TestCase):
                 self.assert_checklist(self.feedback(generated))
 
     def test_missing_key_returns_checklist_without_http(self):
-        with patch.dict(os.environ, {"GROQ_API_KEY": ""}), patch("njia.groq_client.httpx.AsyncClient") as client:
+        with patch.dict(os.environ, {"NVIDIA_API_KEY": "", "GROQ_API_KEY": ""}), patch("njia.groq_client.httpx.AsyncClient") as client:
             response = self.client.post("/api/interview/feedback", json=self.body)
             client.assert_not_called()
         self.assertEqual(response.status_code, 200)

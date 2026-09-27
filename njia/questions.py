@@ -153,7 +153,7 @@ async def generate(text: str, country: str, role: str) -> dict:
     allowed = list(dict.fromkeys([*top, *matched, *vocabulary]))[:advisor.MAX_SKILLS]
     allowed = list(dict.fromkeys([*allowed, *matched]))
     curated = "Curated questions from keyword matching and the historical 2023 role sample."
-    if not groq_client.configured():
+    if not (groq_client.configured() or groq_client.nvidia_key()):
         return _curated(market, matched, role, "AI questions are unavailable (Groq API key missing). " + curated)
     context = {
         "cv_text": cv, "country": country, "role": role,
@@ -162,16 +162,17 @@ async def generate(text: str, country: str, role: str) -> dict:
         "lexicon_skills": matched, "allowed_skill_ids": allowed,
     }
     try:
-        content, _message, model = await groq_client.chat(
+        content, message, model = await groq_client.chat(
             [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": json.dumps(context)}],
             json_mode=True, max_tokens=2000, timeout=20.0)
         questions = _validate(content, cv, set(allowed))
         model = advisor._text(model, 200)
+        mode = groq_client.provider(message)
     except (groq_client.ProviderError, ValueError, KeyError, TypeError, RecursionError):
         questions, model = [], None
     if len(questions) < MIN_AI_QUESTIONS:
         return _curated(market, matched, role, "AI questions were unavailable or could not be verified. " + curated)
-    return {"mode": "groq", "model": model, "questions": questions,
+    return {"mode": mode, "model": model, "questions": questions,
             "note": "AI questions based on your redacted CV. Answers are self-reported: answer only what is true, or skip."}
 
 

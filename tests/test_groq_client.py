@@ -10,7 +10,7 @@ from njia import groq_client
 
 class GroqClientTests(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
-        self.environment = patch.dict(os.environ, {"GROQ_API_KEY": "client-test-secret", "GROQ_MODEL": "",
+        self.environment = patch.dict(os.environ, {"NVIDIA_API_KEY": "", "GROQ_API_KEY": "client-test-secret", "GROQ_MODEL": "",
                                                    "NJIA_ADVISOR_MODEL": "", "NJIA_SEARCH_MODEL": ""})
         self.environment.start()
         self.addCleanup(self.environment.stop)
@@ -70,7 +70,7 @@ class GroqClientTests(unittest.IsolatedAsyncioTestCase):
                 self.assertNotIn("rate limit", str(caught.exception))
 
     async def test_missing_key_never_calls_provider(self):
-        with patch.dict(os.environ, {"GROQ_API_KEY": ""}):
+        with patch.dict(os.environ, {"NVIDIA_API_KEY": "", "GROQ_API_KEY": ""}):
             with self.assertRaises(groq_client.ProviderError):
                 await self.call(self.envelope())
         self.assertEqual(self.payloads, [])

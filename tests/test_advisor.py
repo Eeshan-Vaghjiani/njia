@@ -11,7 +11,7 @@ from njia import advisor
 
 class AdvisorTests(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
-        self.environment = patch.dict(os.environ, {"GROQ_API_KEY": "advisor-test-secret", "GROQ_MODEL": "", "NJIA_ADVISOR_MODEL": ""})
+        self.environment = patch.dict(os.environ, {"NVIDIA_API_KEY": "", "GROQ_API_KEY": "advisor-test-secret", "GROQ_MODEL": "", "NJIA_ADVISOR_MODEL": ""})
         self.environment.start()
         self.addCleanup(self.environment.stop)
         self.client_class = httpx.AsyncClient
@@ -100,7 +100,7 @@ class AdvisorTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual((await self.generate(handler, self.cv + injection))["mode"], "groq")
 
     async def test_missing_key_is_deterministic_without_network(self):
-        with patch.dict(os.environ, {"GROQ_API_KEY": " "}), patch("njia.advisor.httpx.AsyncClient") as client:
+        with patch.dict(os.environ, {"NVIDIA_API_KEY": "", "GROQ_API_KEY": " "}), patch("njia.advisor.httpx.AsyncClient") as client:
             first = await advisor.assess_cv(self.cv, "Kenya", "Data Analyst")
             second = await advisor.assess_cv(self.cv, "Kenya", "Data Analyst")
             client.assert_not_called()

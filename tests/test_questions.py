@@ -26,7 +26,7 @@ def mock_client(handler, module="njia.groq_client"):
 
 class QuestionsEndpointTests(unittest.TestCase):
     def setUp(self):
-        environment = patch.dict(os.environ, {"GROQ_API_KEY": "questions-test-secret", "GROQ_MODEL": "", "NJIA_ADVISOR_MODEL": ""})
+        environment = patch.dict(os.environ, {"NVIDIA_API_KEY": "", "GROQ_API_KEY": "questions-test-secret", "GROQ_MODEL": "", "NJIA_ADVISOR_MODEL": ""})
         environment.start()
         self.addCleanup(environment.stop)
         self.client = TestClient(app)
@@ -117,7 +117,7 @@ class QuestionsEndpointTests(unittest.TestCase):
                 self.assertNotIn("PRIVATE", json.dumps(data))
 
     def test_missing_key_returns_curated_without_network(self):
-        with patch.dict(os.environ, {"GROQ_API_KEY": " "}), patch("njia.groq_client.httpx.AsyncClient") as client:
+        with patch.dict(os.environ, {"NVIDIA_API_KEY": "", "GROQ_API_KEY": " "}), patch("njia.groq_client.httpx.AsyncClient") as client:
             data = self.client.post("/api/questions", json=self.payload).json()
             client.assert_not_called()
         self.assertEqual(data["mode"], "curated")
@@ -136,7 +136,7 @@ class QuestionsEndpointTests(unittest.TestCase):
 
 class AnswersAdvisorTests(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
-        environment = patch.dict(os.environ, {"GROQ_API_KEY": "advisor-test-secret", "GROQ_MODEL": "", "NJIA_ADVISOR_MODEL": ""})
+        environment = patch.dict(os.environ, {"NVIDIA_API_KEY": "", "GROQ_API_KEY": "advisor-test-secret", "GROQ_MODEL": "", "NJIA_ADVISOR_MODEL": ""})
         environment.start()
         self.addCleanup(environment.stop)
         self.generated = {
@@ -202,7 +202,7 @@ class AnswersAdvisorTests(unittest.IsolatedAsyncioTestCase):
                 self.assertEqual(self.requests[-1]["messages"][0]["content"], advisor.SYSTEM_PROMPT)
 
     async def test_curated_fallback_applies_answers(self):
-        with patch.dict(os.environ, {"GROQ_API_KEY": ""}):
+        with patch.dict(os.environ, {"NVIDIA_API_KEY": "", "GROQ_API_KEY": ""}):
             result = await advisor.assess_cv(CV, "Kenya", "Data Analyst", answers=self.answers)
         self.assertEqual(result["mode"], "curated")
         self.assertIn("python", result["suggested_skills"])
@@ -228,7 +228,7 @@ class AdviseEndpointAnswersTests(unittest.TestCase):
         client = TestClient(app)
         payload = {"text": CV, "country": "Kenya", "role": "Data Analyst", "consent": True, "answers": [
             {"id": "q1", "type": "skill", "skill": "python", "question": "Have you used Python?", "answer": "Used it at work"}]}
-        with patch.dict(os.environ, {"GROQ_API_KEY": "advisor-test-secret"}), mock_client(handler, "njia.advisor"):
+        with patch.dict(os.environ, {"NVIDIA_API_KEY": "", "GROQ_API_KEY": "advisor-test-secret"}), mock_client(handler, "njia.advisor"):
             response = client.post("/api/advise", json=payload)
             self.assertEqual(response.status_code, 200)
             data = response.json()
