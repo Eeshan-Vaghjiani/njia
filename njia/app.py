@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 import time
 import os
-from typing import Annotated
+from typing import Annotated, Literal
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
@@ -9,7 +9,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import assessment, coaching, engine, uploads, advisor
+from . import assessment, coaching, engine, uploads, advisor, questions, jobs, interview
 
 load_dotenv(engine.ROOT / ".env")
 
@@ -23,6 +23,9 @@ async def lifespan(app):
 
 app = FastAPI(title="Njia career coach", version="1.1.0", lifespan=lifespan)
 app.include_router(uploads.router)
+app.include_router(questions.router)
+app.include_router(jobs.router)
+app.include_router(interview.router)
 
 
 @app.middleware("http")
@@ -49,9 +52,18 @@ class ExtractRequest(BaseModel):
     consent: bool
 
 
+class Answer(BaseModel):
+    id: str = Field(max_length=10)
+    type: Literal["skill", "detail"]
+    skill: str | None = Field(default=None, max_length=100)
+    question: str = Field(max_length=300)
+    answer: str = Field(max_length=400)
+
+
 class AdvisorRequest(ExtractRequest):
     country: str = Field(max_length=80)
     role: str = Field(max_length=80)
+    answers: list[Answer] = Field(default_factory=list, max_length=6)
 
 
 class AnalysisRequest(BaseModel):
@@ -116,7 +128,8 @@ async def advise(body: AdvisorRequest):
         raise HTTPException(422, "Add at least 10 characters about your experience.")
     validate_market(AnalysisRequest(country=body.country, role=body.role, skills=[]))
     start = time.perf_counter()
-    result = await advisor.assess_cv(body.text, body.country, body.role)
+    result = await advisor.assess_cv(body.text, body.country, body.role,
+                                     answers=[item.model_dump() for item in body.answers] or None)
     market = engine.analyze(body.country, body.role, result["suggested_skills"])
     return {"advisor": result, "market": market, "elapsed_ms": round((time.perf_counter()-start)*1000, 1)}
 

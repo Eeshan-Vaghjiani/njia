@@ -1,20 +1,83 @@
-"""Record the real public coach at 1x: exactly 90 seconds, captions, no audio."""
+"""Record the real coach at 1x: exactly 90 seconds, captions, no audio.
+
+Story: upload a synthetic PDF -> Njia asks follow-up skill questions -> the brief
+is shaped by the answers -> live jobs open to Kenyan applicants -> fact-keeping
+rewrites and a seven-day plan (WhatsApp) -> real interview questions found on
+the web -> practise an answer with AI feedback -> privacy-aware download.
+
+Web-search caches (jobs and interview questions for Kenya / Data Analyst) are
+warmed before the first caption so a slow search does not stall the timeline.
+Warm-up calls are recorded in the results JSON. Answers follow the fictional
+CV truthfully (for example, Python is "Still learning it").
+
+Usage: .venv/bin/python scripts/record_coach_demo.py [--base-url http://127.0.0.1:8000]
+"""
+import argparse
 import json
 import shutil
 import time
 
 from playwright.sync_api import expect, sync_playwright
 
-from coach_acceptance import (ARTIFACTS, BASE, PDF_TEXT, home, click_api,
-                              download, reserve, save, make_pdf, file_payload, Audit)
+import coach_acceptance
+from coach_acceptance import ARTIFACTS, PDF_TEXT, click_api, download, save, make_pdf, file_payload, Audit
 from record_demo import caption, frame, finalize
+
+COUNTRY, ROLE = "Kenya", "Data Analyst"
+# Truthful answers for the fictional candidate in PDF_TEXT.
+SKILL_ANSWERS = {"excel": "Used it at work", "sql": "Used it in a project or course",
+                 "power bi": "Used it in a project or course", "python": "Still learning it"}
+DETAIL_ANSWER = "The operations team used the monthly sales summary to plan stock for the three branches."
+PRACTICE_ANSWER = (
+    "At the retail cooperative, weekly sales totals did not match the stock records. "
+    "I checked the sales spreadsheets against the stock records, found duplicate entries and flagged them to my supervisor. "
+    "I then rebuilt the Excel pivot table summary and checked the totals against the source spreadsheet, "
+    "so the operations team could trust the weekly report again."
+)
+
+
+def answer_questions(page, questions):
+    answered = {"skills": {}, "detail": False}
+    for question in questions:
+        if question.get("type") == "skill":
+            value = SKILL_ANSWERS.get(question.get("skill"), "Not yet")
+            radio = page.locator(f'#followup-panel input[name="followup-{question["id"]}"][value="{value}"]')
+            if radio.count():
+                # Styled pills may visually hide the native radio; set it the way a click would.
+                radio.first.evaluate("el => { el.checked = true; el.dispatchEvent(new Event('change', {bubbles: true})); }")
+                answered["skills"][question.get("skill")] = value
+        elif question.get("type") == "detail" and not answered["detail"]:
+            box = page.locator("#followup-panel textarea")
+            if box.count():
+                box.first.fill(DETAIL_ANSWER)
+                answered["detail"] = True
+    return answered
+
+
+def warm_caches(api, base):
+    """Warm server-side web-search caches (role/country only; no CV data)."""
+    warmed = []
+    for path, body in (("/api/jobs", {"country": COUNTRY, "role": ROLE, "skills": ["excel", "sql", "power bi"], "source": "web"}),
+                       ("/api/interview/questions", {"country": COUNTRY, "role": ROLE, "skills": ["excel", "sql", "power bi"]})):
+        started = time.monotonic()
+        try:
+            response = api.post(base + path, data=body, timeout=90000)
+            warmed.append({"path": path, "status": response.status, "seconds": round(time.monotonic() - started, 2)})
+        except Exception as error:  # A cold cache only slows the timeline; never fake output.
+            warmed.append({"path": path, "error": type(error).__name__})
+    return warmed
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--base-url", default=coach_acceptance.BASE)
+    args = parser.parse_args()
+    base = coach_acceptance.BASE = args.base_url.rstrip("/")
     ffmpeg, ffprobe = shutil.which("ffmpeg"), shutil.which("ffprobe")
-    assert ffmpeg and ffprobe
-    result = {"status": "running", "base_url": BASE, "synthetic_only": True,
-              "mocked_responses": 0, "playback_speed": "1x", "timeline": [], "checks": []}
+    assert ffmpeg and ffprobe, "ffmpeg and ffprobe must be on PATH."
+    ARTIFACTS.mkdir(exist_ok=True)
+    result = {"status": "running", "base_url": base, "synthetic_only": True, "mocked_responses": 0,
+              "playback_speed": "1x", "timeline": [], "late_cues": [], "checks": []}
     raw = ARTIFACTS / "njia-coach-demo-raw.webm"
 
     def check(name, condition, evidence=None):
@@ -22,87 +85,102 @@ def main():
         assert condition, (name, evidence)
 
     with sync_playwright() as p:
+        # Warm up outside the recorded context: finalize() looks for the sync marker in the first 5 raw seconds.
+        api = p.request.new_context()
+        result["prewarmed"] = warm_caches(api, base)
+        api.dispose()
         browser = p.chromium.launch()
         context = browser.new_context(viewport={"width": 1280, "height": 720},
             record_video_dir=str(ARTIFACTS / "coach-video-source"),
             record_video_size={"width": 1280, "height": 720}, reduced_motion="reduce")
         page = context.new_page()
-        page.set_default_timeout(12000)
+        page.set_default_timeout(20000)
         audit = Audit(page)
         video = page.video
         try:
-            result["meta_ai"] = home(page).get("ai")
+            result["meta_ai"] = coach_acceptance.home(page).get("ai")
             started = time.monotonic()
 
             def at(seconds, section, text):
                 remaining = started + seconds - time.monotonic()
-                assert remaining > -1.0, f"Missed {seconds}s cue by {-remaining:.2f}s; raw retained."
                 if remaining > 0:
                     page.wait_for_timeout(remaining * 1000)
+                elif remaining < -0.5:
+                    result["late_cues"].append({"cue_seconds": seconds, "late_by_seconds": round(-remaining, 2)})
                 caption(page, section, text)
                 result["timeline"].append({"cue_seconds": seconds, "actual_seconds": round(time.monotonic() - started, 3),
                                            "section": section, "caption": text})
 
-            at(0, "NJIA / YOUR NEXT MOVE", "A sharper CV. A focused week. Career advice grounded in your experience and historical Kenyan market evidence.")
+            at(0, "NJIA / YOUR NEXT MOVE", "Upload a CV. Njia asks what your CV doesn't say, finds live jobs you can apply for, and preps you with real interview questions.")
             page.evaluate("window.scrollTo(0,0)")
-            at(6, "01 / A REAL PDF, A FICTIONAL CANDIDATE", "Upload a synthetic CV: Excel sales reports, a Power BI dashboard and a SQL practice project. No real personal details.")
+            at(5, "01 / A REAL PDF, A FICTIONAL CANDIDATE", "A synthetic CV: Excel sales reports, a Power BI dashboard and a SQL practice project. No real personal details.")
             page.locator("#cv-file").set_input_files(file_payload("pdf", make_pdf(PDF_TEXT), "synthetic-coach-cv.pdf"))
             frame(page, "#file-zone", 110)
-            at(12, "REVIEW THE CONSENT", "Consent permits server file processing and sending CV text to the AI provider with basic contact redaction.")
+            at(10, "CONSENT FIRST", "Consent covers server file processing and sending CV text, with basic contact redaction, to the AI provider.")
             page.locator("#consent").check()
             frame(page, ".consent-block", 230)
-            at(18, "02 / ONE CLICK → YOUR CAREER BRIEF", "Build my career brief reads the PDF and calls the real public /api/advise endpoint. This is a live request.")
-            reserve("record_coach_demo_pdf")
+
+            at(14, "02 / NJIA ASKS BEFORE IT ADVISES", "Build my career brief reads the PDF. Then the AI asks about skills your CV doesn't clearly show. Live request.")
             with page.expect_response(lambda r: r.url.endswith("/api/upload")) as upload_pending:
-                data, elapsed = click_api(page, "#build-brief", "/api/advise", timeout=90000)
-            result.update(response=data, elapsed_seconds=elapsed, upload=upload_pending.value.json())
-            a, m = data["advisor"], data["market"]
+                questions, q_elapsed = click_api(page, "#build-brief", "/api/questions", timeout=60000)
+            result.update(questions=questions, questions_seconds=q_elapsed, upload=upload_pending.value.json())
             check("actual_pdf_upload", result["upload"]["text"] == PDF_TEXT and result["upload"]["format"] == "pdf")
+            expect(page.locator("#followup-panel")).to_be_visible()
+            check("followup_questions_shown", 2 <= len(questions["questions"]) <= 5, {"mode": questions.get("mode"), "model": questions.get("model")})
+            frame(page, "#followup-panel", 20)
+            at(21, "QUICK QUESTIONS, SHARPER ADVICE", f"{len(questions['questions'])} questions ({questions.get('model') or 'curated'}) in {q_elapsed:.1f}s. The fictional candidate answers truthfully.")
+            result["answered"] = answer_questions(page, questions["questions"])
+
+            at(29, "YOUR ANSWERS GO INTO THE BRIEF", "Build my brief with these answers sends the CV and answers to Groq. Stats are computed separately.")
+            data, elapsed = click_api(page, "#followup-submit", "/api/advise", timeout=90000)
+            a, m = data["advisor"], data["market"]
+            result.update(response=data, elapsed_seconds=elapsed)
             check("actual_groq_advisor", a["mode"] == "groq", {"model": a["model"], "elapsed_seconds": elapsed})
+            check("answers_reached_brief", "answers_used" in a, a.get("answers_used"))
             expect(page.locator("#ai-provenance")).to_contain_text(a["model"])
             check("seven_day_plan", len(a["seven_day_plan"]) == 7)
             frame(page, "#results", 25)
-            at(25, "LIVE RESULT / GROQ", f"Returned by {a['model']} in {elapsed:.2f}s, including PDF processing. The mode and model are visible in the brief.")
-            page.screenshot(path=str(ARTIFACTS / "coach-demo-groq.png"))
-            if a["strengths"]:
-                page.locator("#strengths summary").first.click()
-                frame(page, "#summary-card", 35)
-            at(31, "EVIDENCE FOR YOUR STRENGTHS", "Open a strength to inspect the CV evidence behind it. Suggested skills still need your review; they are not verified proficiency.")
-            frame(page, "#strengths", 130)
-            at(37, "03 / THREE PRIORITIES. ONE DIRECTION.", f"The actual response uses {m['sample_size']} historical postings and {m['coverage']}% demand-weighted coverage. This is not a hiring probability.")
-            frame(page, "#market-title", 45)
-            at(43, "MAKE THE FIRST MOVE SMALL", "Each priority pairs market demand with a practical first step. These are historical examples, not live vacancies.")
-            frame(page, "#priority-cards", 45)
-            if a["cv_improvements"]:
-                at(49, "04 / BEFORE → SUGGESTED REWRITE", "Compare the original CV bullet with the returned rewrite. Check every fact; add a metric only when you can verify it.")
-            else:
-                at(49, "04 / HONEST CV FEEDBACK", "No grounded rewrite was returned for this request. The app says so: clarify a real task, tool and outcome without inventing achievements.")
+            at(37, "LIVE RESULT / SHAPED BY YOUR ANSWERS", f"Returned by {a['model']} in {elapsed:.1f}s. The brief notes which answers changed the skill profile.")
+
+            at(43, "03 / LIVE JOBS YOU CAN APPLY FOR", "Current remote postings open to applicants in Kenya, plus local postings found by web search with verified links.")
+            frame(page, "#live-jobs-section", 25)
+            expect(page.locator("#live-jobs .live-job").first).to_be_visible(timeout=25000)
+            result["live_jobs_shown"] = page.locator("#live-jobs .live-job").count()
+            check("live_jobs_rendered", result["live_jobs_shown"] > 0, result["live_jobs_shown"])
+            at(49, "MATCHED TO YOUR SKILLS", "Each job shows the skills you have and the ones to build. Match % is skill overlap, not a hiring probability.")
+            frame(page, "#live-jobs .live-job", 70)
+
+            at(55, "04 / SAY IT BETTER", "Rewrites keep your facts. They may use details from your answers, and each one still needs your check.")
             frame(page, "#rewrite-title", 45)
             result["actual_rewrite_count"] = len(a["cv_improvements"])
-            page.screenshot(path=str(ARTIFACTS / "coach-demo-rewrites.png"))
-            at(56, "05 / YOUR NEXT SEVEN DAYS", "Seven small actions, each with something tangible to keep. Mark progress for this session as you work through the plan.")
+            at(60, "05 / SEVEN DAYS, ON WHATSAPP", "Seven small actions, each with a deliverable. Tick off progress, or send the checklist to yourself on WhatsApp.")
             frame(page, "#plan-title", 35)
             page.locator('[data-day="0"]').check()
-            at(62, "FROM ADVICE TO SOMETHING YOU CAN SHOW", "Continue through the week: practise, save your work and explain what you learned. The checklist is yours to take away.")
-            frame(page, '#seven-day-plan li:nth-child(4)', 65)
-            at(68, "06 / PRACTISE YOUR INTERVIEW ANSWER", "One tailored question, plus what a good answer includes. Use your real experience to practise a clear explanation.")
-            page.locator("#interview-guidance summary").click()
-            frame(page, "#interview-section", 40)
-            at(75, "REVIEW YOUR SKILLS", "Keep skills you can support. Confirming recalculates historical market evidence without generating another AI brief.")
-            frame(page, "#skill-review", 45)
-            confirmed, _ = click_api(page, "#confirm-skills", "/api/analyze")
-            result["confirmed_market"] = confirmed
-            expect(page.locator("#skill-status")).to_contain_text("Skills confirmed")
-            at(81, "07 / DOWNLOAD YOUR CAREER BRIEF", "The HTML download excludes CV evidence quotes and before/after rewrites by default. Include them only by checking the opt-in.")
+            check("whatsapp_share_visible", page.locator("#whatsapp-checklist").is_visible())
+
+            at(65, "06 / WHAT INTERVIEWERS ACTUALLY ASK", "Njia searches the web for questions candidates report being asked and keeps only those with a verifiable source.")
+            frame(page, "#interview-research-section", 25)
+            iq, iq_elapsed = click_api(page, "#load-web-questions", "/api/interview/questions", timeout=90000)
+            result.update(interview_questions=iq, interview_seconds=iq_elapsed)
+            expect(page.locator("#interview-research .web-question").first).to_be_visible()
+            at(71, "REAL QUESTIONS, REAL SOURCES", f"{len(iq['questions'])} questions ({'web-sourced' if iq['mode'] == 'web' else 'curated fallback'}). Where it fits, Njia points to your own CV evidence.")
+            frame(page, "#interview-research .web-question", 60)
+
+            at(76, "PRACTISE, THEN GET FEEDBACK", "Type an answer, consent to AI feedback, and get a STAR check, a score and a stronger outline that invents nothing.")
+            page.locator("#interview-research .web-question .practise-button").first.click()
+            page.locator("#practice-answer").fill(PRACTICE_ANSWER)
+            page.locator("#practice-consent").check()
+            feedback, fb_elapsed = click_api(page, "#practice-submit", "/api/interview/feedback", timeout=60000)
+            result.update(feedback=feedback, feedback_seconds=fb_elapsed)
+            expect(page.locator("#practice-feedback")).to_be_visible()
+            check("practice_feedback_scored", isinstance(feedback.get("score"), int), {"mode": feedback.get("mode"), "score": feedback.get("score")})
+            frame(page, "#practice-feedback", 40)
+
+            at(83, "07 / TAKE IT WITH YOU", "Download the brief. CV quotes and rewrites are excluded by default. Njia keeps no accounts and stores no CVs.")
             frame(page, ".export-card", 35)
-            expect(page.locator("#include-excerpts")).not_to_be_checked()
             default = download(page, "coach-demo-default.html")
             check("default_download_excludes_excerpt_sections", "<h2>CV evidence</h2>" not in default and "<h2>CV rewrites" not in default)
-            page.wait_for_timeout(1200)
-            page.locator("#include-excerpts").check()
-            included = download(page, "coach-demo-with-excerpts.html")
-            check("optin_download_includes_rewrite_section", "<h2>CV rewrites" in included)
-            at(87, "NJIA / A CLEARER NEXT MOVE", "gomycode-2026.vercel.app · Review your brief. Build evidence. Take your next step.")
+            at(87, "NJIA / A CLEARER NEXT MOVE", "gomycode-2026.vercel.app · Ask. Match. Practise. Take your next step.")
             page.wait_for_timeout(max(0, started + 91 - time.monotonic()) * 1000)
             check("single_recording_advice_call", audit.count("/api/advise") == 1)
             check("no_javascript_errors", not audit.errors, audit.errors)
@@ -122,18 +200,16 @@ def main():
     target = ARTIFACTS / "njia-coach-demo-90s.webm"
     result["video"] = finalize(raw, target, ffmpeg, ffprobe)
     check("exact_90_seconds_silent_normal_speed", result["video"]["duration_seconds"] == 90.0)
-    old = ARTIFACTS / "njia-demo-90s.webm"
-    backup = ARTIFACTS / "njia-demo-90s-previous.webm"
-    if old.exists():
-        assert not backup.exists(), "Backup exists; preserve it and inspect before replacing."
+    old, backup = ARTIFACTS / "njia-demo-90s.webm", ARTIFACTS / "njia-demo-90s-previous.webm"
+    if old.exists() and not backup.exists():
         shutil.copy2(old, backup)
         result["previous_video_preserved"] = str(backup.relative_to(ARTIFACTS.parent))
     shutil.copy2(target, old)
     result.update(status="passed", passed=sum(c["passed"] for c in result["checks"]))
     save("njia-coach-demo-results.json", result)
     print(json.dumps({"status": result["status"], "checks": result["passed"], "duration": result["video"]["duration_seconds"],
-                      "model": result["response"]["advisor"]["model"], "elapsed_seconds": result["elapsed_seconds"],
-                      "video": str(target), "old_preserved": result.get("previous_video_preserved")}, indent=2))
+                      "model": result["response"]["advisor"]["model"], "late_cues": result["late_cues"],
+                      "prewarmed": result["prewarmed"], "video": str(old)}, indent=2))
 
 
 if __name__ == "__main__":

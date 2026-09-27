@@ -1,9 +1,11 @@
 """Local-only Njia deck builder. No API calls, credentials, or remote assets.
 
-Build:    python scripts/build_final_deck.py
-PDF:      .venv/Scripts/python.exe scripts/build_final_deck.py --render-only
-Validate: python scripts/build_final_deck.py --validate
-Only writes inside presentation/. PPTX and HTML share the same design objects.
+Everything:  .venv/bin/python scripts/build_final_deck.py --all [--out DIR]
+Build only:  .venv/bin/python scripts/build_final_deck.py [--out DIR]
+PDF + PNGs:  .venv/bin/python scripts/build_final_deck.py --render-only [--out DIR]
+Validate:    .venv/bin/python scripts/build_final_deck.py --validate [--out DIR]
+Writes only inside --out (default presentation/). PPTX and HTML share the same design objects.
+Every tested or observed figure comes from EVIDENCE below or the bundled dataset.
 """
 from pathlib import Path
 import argparse
@@ -17,6 +19,38 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "presentation"
 STEM = "Njia-Dhruzzz"
 DEMO_URL = "https://github.com/Eeshan-Vaghjiani/njia/releases/download/demo-v1/njia-demo-90s.webm"
+
+# Single source for every tested/observed figure shown in the deck, notes and README.
+# The first block carries over the verified values from the published deck. The
+# new-feature block stays None until the integrator has verified a value; None never
+# renders a number, only a neutral description of the feature.
+EVIDENCE = {
+    "backend_tests": 73,
+    "backend_count_source": "Main implementation owner confirmation",
+    "acceptance_assertions": 48,
+    "recording_assertions": 9,
+    "provider": "Groq",
+    "model": "openai/gpt-oss-20b",
+    "observed_seconds": {"desktop": 2.259, "mobile": 1.318, "recording_with_pdf": 2.260},
+    "javascript_errors": 0,
+    "sample_size": 391,
+    "coverage": 39.6,
+    "video_seconds": 90,
+    "source": "Verified values carried over from the published deck (coach acceptance + demo recording runs).",
+    "factual_limit": "Observed unsupported real-time sales monitoring in a rewrite; human factual review required.",
+    # New features. Fill only with verified values, e.g.
+    # "live_jobs_example": {"count": 111, "role": "Data Analyst", "country": "Kenya", "date": "27 Sep 2026"},
+    # "web_questions_example": {"count": 5, "role": "Data Analyst", "country": "Kenya"},
+    # "new_feature_tests": 24,
+    "live_jobs_example": None,
+    "web_questions_example": None,
+    "new_feature_tests": None,
+    "demo_predates_new_features": True,
+}
+NEW_FEATURE_KEYS = ["live_jobs_example", "web_questions_example", "new_feature_tests"]
+TAGLINE = "Ask. Match. Practise. Your next move."
+SANS = "'Segoe UI','Noto Sans','DejaVu Sans',Arial,sans-serif"
+SERIF = "Georgia,'Noto Serif','DejaVu Serif',serif"
 NAVY = "14283F"
 IVORY = "F7F4EC"
 ORANGE = "F27B43"
@@ -28,6 +62,25 @@ WHITE = "FFFFFF"
 LIGHT = "FFF0E5"
 GREEN = "246855"
 SLIDES = []
+
+
+def public_total():
+    return EVIDENCE["acceptance_assertions"] + EVIDENCE["recording_assertions"]
+
+
+def seconds(key):
+    return f'{EVIDENCE["observed_seconds"][key]:.3f}s'
+
+
+def new_feature_parts():
+    jobs, questions, tests = (EVIDENCE[k] for k in NEW_FEATURE_KEYS)
+    return [
+        (f'{jobs["count"]:,} remote {jobs["role"]} jobs open to {jobs["country"]} ({jobs["date"]})' if jobs
+         else "Remote jobs open to Kenya or worldwide"),
+        (f'{questions["count"]} source-linked interview questions' if questions
+         else "only source-verified web questions shown"),
+        (f"{tests} new-feature tests passed" if tests else "labelled fallback on provider failure"),
+    ]
 
 
 def box(s, x, y, w, h, fill, radius=0, stroke=None):
@@ -65,79 +118,78 @@ def label(s, value, x, y, w=600, color=ORANGE):
 
 
 def build_content():
-    acceptance = json.loads((ROOT / "artifacts/coach-acceptance-results.json").read_text(encoding="utf-8"))
-    recording = json.loads((ROOT / "artifacts/njia-coach-demo-results.json").read_text(encoding="utf-8"))
-    assert acceptance["passed"] == 48 and recording["passed"] == 9
-    assert all(c["passed"] for c in acceptance["checks"] + recording["checks"])
-    assert recording["video"]["duration_seconds"] == 90
-    assert not recording["javascript_errors"]
-    for flow in acceptance["flows"].values():
-        assert not flow["javascript_errors"]
-        assert flow["response"]["advisor"]["mode"] == "groq"
-        assert flow["response"]["advisor"]["model"] == "openai/gpt-oss-20b"
-    (OUT / "production-evidence.json").write_text(json.dumps({
-        "backend_tests_passed": 73, "backend_count_source": "Main implementation owner confirmation",
-        "public_acceptance_assertions": 48, "recording_assertions": 9, "public_total": 57,
-        "provider": "Groq", "model": "openai/gpt-oss-20b",
-        "observed_seconds": {"desktop": 2.259, "mobile": 1.318, "recording_with_pdf": 2.260},
-        "javascript_errors": 0, "sample_size": 391, "coverage": 39.6,
-        "video_seconds": 90, "source_artifacts": ["artifacts/coach-acceptance-results.json", "artifacts/njia-coach-demo-results.json"],
-        "factual_limit": "Observed unsupported real-time sales monitoring in a rewrite; human factual review required."
-    }, indent=2), encoding="utf-8")
+    e = EVIDENCE
+    bt, acc, rec, total = e["backend_tests"], e["acceptance_assertions"], e["recording_assertions"], public_total()
+    jobs = e["live_jobs_example"]
+    jobs_note = (f' In a live check on {jobs["date"]}, {jobs["count"]:,} remote {jobs["role"]} postings were open to'
+                 f' {jobs["country"]} or worldwide.' if jobs else "")
     rows = [json.loads(line) for line in
             (ROOT / "data/africa_jobs_subset.jsonl").read_text(encoding="utf-8").splitlines() if line]
     ke = [r for r in rows if r["job_country"] == "Kenya"]
     da = [r for r in ke if r["job_title_short"] == "Data Analyst"]
     countries = len({r["job_country"] for r in rows})
     assert (len(rows), countries, len(ke), len(da)) == (18371, 10, 1326, 391)
+    assert len(da) == e["sample_size"]
     counts = collections.Counter(skill for r in da for skill in set(r["skills"]))
     skills = ["sql", "python", "r", "excel", "spss"]
     demand = sorted([(skill, round(counts[skill] / len(da) * 100, 1)) for skill in skills], key=lambda item: -item[1])
+    (OUT / "production-evidence.json").write_text(json.dumps({
+        "backend_tests_passed": bt, "backend_count_source": e["backend_count_source"],
+        "public_acceptance_assertions": acc, "recording_assertions": rec, "public_total": total,
+        "provider": e["provider"], "model": e["model"], "observed_seconds": e["observed_seconds"],
+        "javascript_errors": e["javascript_errors"], "sample_size": e["sample_size"], "coverage": e["coverage"],
+        "video_seconds": e["video_seconds"], "source": e["source"], "factual_limit": e["factual_limit"],
+        **{k: e[k] for k in NEW_FEATURE_KEYS},
+        "unverified_new_feature_fields": [k for k in NEW_FEATURE_KEYS if e[k] is None],
+        "demo_predates_new_features": e["demo_predates_new_features"],
+    }, indent=2), encoding="utf-8")
 
     s = slide("01  /  The Kenyan learner", "A CV tells your past.\nNjia helps choose your next step.", dark=True,
-              notes="Njia means path in Swahili. We are Dhruzzz, a Kenya ONLINE team. Wanjiru is an illustrative persona, not an interviewed user. The working production advisor connects CV evidence to historical country-and-role demand, suggested CV rewrites and a seven-day plan. Public desktop, mobile and recording runs used real Groq inference; the evidence is summarized on slide 6.")
-    text(s, "AI career guidance grounded in your CV\nand the skills your target market asks for.", 76, 295, 920, 105, 34, PALE)
+              notes="Njia means path in Swahili. We are Dhruzzz, a Kenya ONLINE team. Wanjiru is an illustrative persona, not an interviewed user. Njia now asks before it advises: after the CV is provided, it asks a few follow-up questions, then links strengths to CV evidence and the learner's own answers, sets three priorities from historical 2023 Kenya role data, and suggests fact-preserving CV rewrites and a seven-day plan. It also answers two new questions: which jobs can I apply for now, and am I ready for the interview? Skill-match percentages measure skill overlap and are not a hiring probability. Evidence and limits are on slide 6.")
+    text(s, "A career coach that asks before it advises,\nthen matches you to jobs you can apply for.", 76, 295, 940, 105, 34, PALE)
     label(s, "THE LEARNER'S THREE QUESTIONS", 76, 461)
     for y, n, heading, sub in [
-        (518, "01", "What can I already show?", "Find strengths backed by actual CV excerpts."),
-        (612, "02", "What should I work on first?", "Prioritize skills using Kenya + target-role data."),
-        (706, "03", "What can I do this week?", "Leave with clearer CV bullets and concrete practice.")]:
+        (518, "01", "What can I already show?", "Njia asks follow-ups, then links strengths to CV evidence."),
+        (612, "02", "Which jobs can I apply for now?", "Live postings with a skill-match %, not hiring odds."),
+        (706, "03", "Am I ready for the interview?", "Real reported questions, typed practice and AI feedback.")]:
         text(s, n, 76, y, 55, 45, 27, ORANGE, True)
         text(s, heading, 148, y, 790, 42, 29, IVORY, True)
-        text(s, sub, 148, y + 42, 800, 39, 23, PALE)
+        text(s, sub, 148, y + 42, 860, 39, 23, PALE)
     box(s, 1050, 300, 478, 481, "203A52", 18)
     text(s, "W", 1092, 328, 130, 120, 90, ORANGE, serif=True)
     label(s, "ILLUSTRATIVE PERSONA", 1095, 465, 380, PALE)
     text(s, "Wanjiru\nNairobi · aspiring data analyst", 1095, 511, 388, 112, 31, IVORY, True)
-    text(s, "Has project experience.\nNeeds a credible CV and\na focused learning plan.", 1095, 649, 389, 107, 26, PALE)
+    text(s, "Has project experience.\nUnsure which roles fit\nand how to prepare.", 1095, 649, 389, 107, 26, PALE)
 
-    s = slide("02  /  The product upgrade", "From a vague bullet to a useful next move.",
-              "One assessment: evidence-grounded strengths, demand priorities, suggested rewrites and interview practice.",
-              notes="This is a hand-authored illustration of the intended assessment output, not a captured model response. Both bullets use the same facts: cleaned sales data in Excel and built weekly charts. There is no invented business impact, percentage or credential. The SQL recommendation is an illustrative gap when SQL is not evidenced in the CV; absence of CV evidence does not mean absence of ability. The current upgrade adds a tailored seven-day action plan and interview question.")
+    s = slide("02  /  The product story", "Ask first. Then match and practise.",
+              "Follow-up questions, an evidence-linked brief, live job matches and interview practice.",
+              notes="The product story is Ask, Match, Practise. Ask: after the CV is provided, the AI asks three to five follow-up questions: skill questions with the options Used it at work, Used it in a project or course, Still learning it, or Not yet, plus a free-text question about an outcome. Answers reshape the suggested skills and the brief. The before/after example is a hand-authored illustration, not a captured model response. The rewrite uses only the CV line and the learner's own answer; anything drawn from an answer is labelled Uses your answer — verify. No business impact, percentage or credential is invented. Match: live postings the learner can apply for, each with a skill-match percentage, matched and missing skills, and a link to apply on the source. Practise: interview questions candidates report on the web, each with its source link, then typed practice with AI feedback. The seven-day checklist can also be sent to WhatsApp.")
     for x, w, fill in [(74, 660, WHITE), (774, 754, NAVY)]:
         box(s, x, 375, w, 242, fill, 14)
-    label(s, "BEFORE / SUPPLIED CV FACTS", 104, 400, 580, MUTED)
-    text(s, '“Cleaned sales data in Excel\nand made weekly charts.”', 104, 451, 580, 113, 37, INK, serif=True)
-    label(s, "AFTER / HUMAN-REVIEWED EXAMPLE", 808, 400, 680)
-    text(s, '“Prepared weekly sales charts in Excel\nusing cleaned sales data.”', 808, 451, 677, 113, 36, IVORY, serif=True)
+    label(s, "BEFORE / CV LINE + YOUR ANSWER", 104, 400, 580, MUTED)
+    text(s, '“Cleaned sales data in Excel\nand made weekly charts.”', 104, 445, 580, 84, 35, INK, serif=True)
+    text(s, "Your answer: “Managers used them in\nMonday stock reviews.”", 104, 541, 580, 56, 22, MUTED)
+    label(s, "AFTER / USES YOUR ANSWER — VERIFY", 808, 400, 680)
+    text(s, '“Prepared weekly Excel sales charts\nfrom cleaned data for managers’\nMonday stock reviews.”', 808, 445, 690, 125, 35, IVORY, serif=True)
+    text(s, "Same facts plus the learner's own answer. Nothing invented.", 808, 577, 690, 26, 19, PALE)
     for x, heading, detail in [
-        (74, "01 / Strength", "Excel data preparation, supported\nby the learner's own CV excerpt."),
-        (571, "02 / Priority", "If SQL is not evidenced, start with\na JOIN and a checked summary."),
-        (1068, "03 / Action", "A seven-day plan plus a tailored\ninterview question and rubric.")]:
+        (74, "01 / Ask", "Skill + outcome follow-ups\nreshape skills and the brief."),
+        (571, "02 / Match", "Live jobs you can apply for,\nwith matched + missing skills."),
+        (1068, "03 / Practise", "Sourced questions + AI feedback;\nsend the 7-day plan to WhatsApp.")]:
         box(s, x, 653, 455, 4, ORANGE)
         text(s, heading, x, 680, 455, 43, 28, INK, True)
-        text(s, detail, x, 732, 455, 72, 24, MUTED)
-    text(s, "CV rewrites checked for numbers/tools, still require human factual review. Example below is illustrative.", 76, 336, 1440, 28, 18, MUTED)
+        text(s, detail, x, 732, 460, 72, 24, MUTED)
+    text(s, "Illustrative, hand-authored example. Rewrites are checked for numbers/tools and still need human factual review.", 76, 336, 1440, 28, 18, MUTED)
 
     s = slide("03  /  Local data, visible denominators", "Better priorities start with local context.",
               "Historical skill mentions inform the advice; the language model does not invent demand figures.",
-              notes="The chart is recalculated directly from data/africa_jobs_subset.jsonl. The full subset has 18,371 postings across ten countries, including 1,326 Kenyan postings across roles. The denominator for this chart is 391 Kenya Data Analyst postings. A posting may mention several skills, so the bars are not parts of a total. Source: Hugging Face lukebarousse/data_jobs, Apache-2.0, 2023. This is a historical job-posting sample, not live hiring demand or a representative census of Kenya's labor market.")
+              notes="The chart is recalculated directly from data/africa_jobs_subset.jsonl. The full subset has 18,371 postings across ten countries, including 1,326 Kenyan postings across roles. The denominator for this chart is 391 Kenya Data Analyst postings. A posting may mention several skills, so the bars are not parts of a total. Source: Hugging Face lukebarousse/data_jobs, Apache-2.0, 2023. This is a historical job-posting sample, not live hiring demand or a representative census of Kenya's labor market. It sets the three priorities in the brief. Live openings are a separate feature, shown on slide 5, and never change these historical figures.")
     for x, big, caption in [(76, "18,371", "2023 postings in the subset"),
                              (573, "10", "countries represented"),
                              (1070, "1,326", "Kenya postings · all roles")]:
         text(s, big, x, 364, 450, 82, 68, INK, True, True)
         text(s, caption, x, 453, 455, 35, 23, MUTED)
-    label(s, "KENYA / DATA ANALYST / n = 391", 76, 530, 850, INK)
+    label(s, f"KENYA / DATA ANALYST / n = {len(da)}", 76, 530, 850, INK)
     for i, (skill, pct) in enumerate(demand):
         y = 580 + i * 40
         text(s, {"sql": "SQL", "python": "Python", "r": "R", "excel": "Excel", "spss": "SPSS"}[skill],
@@ -147,38 +199,39 @@ def build_content():
         text(s, f"{pct:.1f}%", 810, y - 4, 110, 36, 24, INK, True)
     box(s, 985, 527, 543, 242, LIGHT, 12)
     text(s, "A direction, not a prediction.", 1017, 555, 480, 84, 37, INK, True, True)
-    text(s, "Share of sampled posts mentioning each skill.\nMultiple skills can appear in one posting.\n2023 sample; not current vacancies.", 1017, 653, 477, 93, 23, MUTED)
+    text(s, "Share of sampled posts naming each skill.\nOne post can mention several skills.\n2023 sample; not current vacancies.", 1017, 653, 490, 93, 23, MUTED)
     text(s, "Source: Hugging Face · lukebarousse/data_jobs · Apache-2.0 · 2023", 76, 795, 1400, 26, 17, MUTED,
          link="https://huggingface.co/datasets/lukebarousse/data_jobs")
 
     s = slide("04  /  AI architecture & relevance", "Ground the facts. Personalize the next step.",
-              "AI interprets experience and writes tailored guidance; deterministic code supplies the market evidence.", dark=True,
-              notes="Public production desktop, mobile and recording runs confirmed Groq, openai/gpt-oss-20b. User opts in before CV text is sent to the external AI provider, after basic PII redaction. Redaction is best-effort rather than full anonymization. There is no application database persistence of the CV; this does not make a provider-retention claim. The advisor validates output shape, supported skill IDs and source quotes, and checks newly introduced numbers/tools in rewrites. These checks do not prove semantic factuality: the recorded rewrite added unsupported real-time sales monitoring. Human factual review remains necessary. Rules-based guidance is the fallback when the model is unavailable or output is rejected.")
+              "AI asks and coaches; code computes market figures and keeps only source-verified web results.", dark=True,
+              notes=f"The brief uses Groq-hosted {e['model']}; public production desktop, mobile and recording runs of the earlier release confirmed this model. CV text goes to the AI provider only after opt-in and basic, best-effort PII redaction, which is not full anonymization. There is no application database persistence of the CV; this is not a provider-retention claim. New today: the AI asks three to five follow-up questions after the CV, and the answers reshape suggested skills and the brief. Remote jobs come from the Himalayas public jobs API, filtered to postings whose location restrictions include the user's country or worldwide. Local postings and reported interview questions come from Groq's built-in browser search; a web result is kept only when its URL appears in the search tool's evidence. Web searches receive only role, country and skill names, never CV text. Practice answers need separate consent, and feedback outlines use placeholders such as [your result] instead of inventing facts. Any provider failure falls back to clearly labelled curated or deterministic output. These checks do not prove semantic factuality: an earlier recorded rewrite added unsupported real-time sales monitoring, so human factual review remains necessary.")
     steps = [
-        ("01", "CV + consent", "Country + target role\nBasic PII redaction\nOpt-in before AI transfer"),
-        ("02", "Grounding", "CV evidence excerpts\nAllowed skill vocabulary\nFixed 2023 demand data"),
-        ("03", "AI advisor", "Groq-hosted inference\nopenai/gpt-oss-20b\nStructured JSON output"),
-        ("04", "Checked advice", "Schema + quote checks\nRewrite number/tool checks\nStrengths → plan → practice")]
+        ("01", "CV + answers", "Opt-in + PII redaction\nCountry + target role\n3–5 follow-up questions\nAnswers reshape skills"),
+        ("02", "Grounding", "CV + answer evidence\nFixed 2023 demand data\nAllowed skill vocabulary\nMatch % = skill overlap"),
+        ("03", "AI + sources", f"{e['model']}\nGroq browser search\nHimalayas jobs API\nStructured JSON output"),
+        ("04", "Checked output", "Quote + rewrite checks\nWeb results kept only\nif URL is in evidence\nNo-new-facts feedback")]
     for i, (n, heading, detail) in enumerate(steps):
         x = 76 + i * 370
         box(s, x, 379, 344, 270, "203A52", 12)
-        text(s, n, x + 25, 402, 285, 64, 44, ORANGE, True, True)
-        text(s, heading, x + 25, 477, 294, 45, 31, IVORY, True)
-        text(s, detail, x + 25, 535, 297, 102, 23, PALE)
+        text(s, n, x + 25, 396, 285, 56, 40, ORANGE, True, True)
+        text(s, heading, x + 25, 458, 294, 42, 30, IVORY, True)
+        text(s, detail, x + 25, 512, 305, 118, 22, PALE)
         if i < 3:
-            text(s, "→", x + 344, 480, 28, 50, 27, ORANGE, True, align="center")
+            text(s, "→", x + 344, 460, 28, 50, 27, ORANGE, True, align="center")
     box(s, 76, 681, 1452, 118, "29435B", 10)
-    label(s, "RESILIENT BY DESIGN", 105, 701, 380)
-    text(s, "Model unavailable or output rejected → rules-based guidance", 520, 698, 975, 37, 26, IVORY, True)
-    text(s, "Best-effort PII redaction · CV text sent to AI only with opt-in · no application database persistence",
+    label(s, "PRIVACY BOUNDARY", 105, 701, 380)
+    text(s, "Web search gets role, country + skill names — never CV text", 470, 698, 1030, 37, 26, IVORY, True)
+    text(s, "CV to AI only with opt-in · practice answers need separate consent · provider failure → labelled fallback",
          105, 751, 1385, 30, 21, PALE)
 
     s = slide("05  /  Phone-first workflow", "A career next step, from a phone browser.",
-              "Public desktop + 390 × 844 mobile-browser checks passed. Editable panels below illustrate the journey.",
-              notes="These phone panels are code-native illustrations, not screenshots. The new public mobile flow passed at 390 by 844 with real Groq output, no horizontal overflow and no JavaScript errors. The flow covers consent, CV strengths, historical market priorities, a seven-day plan, an interview question and a downloadable HTML brief. The real sample returned 39.6% demand-weighted coverage over 391 Kenya Data Analyst postings; this is not hiring probability. Desktop returned three rewrites; mobile returned an honest empty rewrite list. No app install is required.")
-    for i, (heading, subtitle) in enumerate([("01 / Give context", "CV + role + permission"),
-                                             ("02 / Read the evidence", "Strengths + local priorities"),
-                                             ("03 / Take action", "Plan + interview practice")]):
+              "Built for phone browsers — no app install. Editable panels below illustrate the new journey.",
+              notes="These phone panels are code-native illustrations, not screenshots; the posting, match figure and feedback score are examples. Panel one: after the CV, role and consent, Njia asks follow-up questions with four options, Used it at work, Used it in a project or course, Still learning it, or Not yet, plus one free-text outcome question. Panel two: live jobs open to the learner's country or worldwide, each with a skill-match percentage, meaning the share of skills detected in the posting that the learner has, plus matched and missing skills and a link to apply on the source. It is not a hiring probability. Panel three: an interview question that candidates report on the web, with its source link. The learner types an answer under separate consent and gets a 1–5 score, a STAR checklist, strengths, improvements and a stronger outline with placeholders instead of invented facts; if the provider fails, a labelled deterministic checklist is shown. The seven-day checklist can also be sent to WhatsApp. The earlier release passed public desktop and 390 by 844 mobile-browser checks; its tested brief returned "
+              f"{e['coverage']}% demand-weighted coverage over {e['sample_size']} Kenya Data Analyst postings.{jobs_note}")
+    for i, (heading, subtitle) in enumerate([("01 / Give context", "CV + role + follow-up answers"),
+                                             ("02 / Match live jobs", "Open to Kenya + skill match %"),
+                                             ("03 / Practise", "Real questions + AI feedback")]):
         x = 78 + i * 495
         text(s, heading, x, 361, 455, 40, 30, INK, True)
         text(s, subtitle, x, 407, 455, 35, 23, MUTED)
@@ -188,80 +241,92 @@ def build_content():
         box(s, px + 137, 480, 80, 6, NAVY, 3)
         text(s, "njia", px + 28, 496, 288, 37, 29, INK, True, True)
         if i == 0:
-            label(s, "YOUR NEXT ROLE", px + 28, 549, 280, MUTED)
-            text(s, "Kenya  /  Data Analyst", px + 28, 586, 295, 33, 23, INK, True)
-            box(s, px + 26, 631, 302, 68, IVORY, 6)
-            text(s, "Paste or upload your CV", px + 39, 652, 270, 31, 21, MUTED)
-            text(s, "Opt in to send CV text to AI", px + 28, 714, 292, 32, 19, MUTED)
-            box(s, px + 26, 753, 302, 28, ORANGE, 5)
-            text(s, "Assess my CV", px + 30, 755, 294, 25, 18, NAVY, True, align="center")
+            label(s, "NJIA ASKS · 2 OF 4", px + 28, 545, 280, MUTED)
+            text(s, "How have you used SQL?", px + 28, 577, 296, 30, 21, INK, True)
+            for j, option in enumerate(["Used it at work", "Used it in a project or course",
+                                        "Still learning it", "Not yet"]):
+                oy = 617 + j * 40
+                box(s, px + 26, oy, 302, 33, ORANGE if j == 1 else IVORY, 6)
+                text(s, option, px + 38, oy + 5, 284, 24, 17, NAVY if j == 1 else INK, j == 1)
         elif i == 1:
-            label(s, "EVIDENCE IN YOUR CV", px + 28, 549, 295, MUTED)
-            text(s, "Excel data preparation", px + 28, 588, 296, 35, 24, INK, True)
-            text(s, '“Cleaned sales data in Excel”', px + 28, 632, 290, 61, 21, MUTED)
-            box(s, px + 26, 707, 302, 67, LIGHT, 6)
-            text(s, "Next: practise a SQL JOIN\nSQL mentioned in 46.5%*", px + 39, 717, 277, 56, 20, INK)
+            label(s, "LIVE · OPEN TO KENYA", px + 28, 545, 295, MUTED)
+            text(s, "Data Analyst · Remote", px + 28, 577, 296, 30, 22, INK, True)
+            text(s, "Example posting · worldwide", px + 28, 610, 296, 25, 17, MUTED)
+            box(s, px + 26, 643, 302, 88, LIGHT, 6)
+            text(s, "Skill match 67%", px + 39, 651, 280, 28, 22, INK, True)
+            text(s, "Matched: SQL, Excel\nMissing: Python", px + 39, 683, 280, 44, 18, MUTED)
+            box(s, px + 26, 742, 302, 32, ORANGE, 5)
+            text(s, "Apply on source →", px + 30, 746, 294, 25, 18, NAVY, True, align="center")
         else:
-            label(s, "YOUR SEVEN-DAY PLAN", px + 28, 549, 292, MUTED)
-            text(s, "Day 1  /  Review CV evidence\nDay 2  /  Build a SQL exercise\nDay 3  /  Check edge cases", px + 28, 590, 296, 106, 21, INK)
-            box(s, px + 26, 709, 302, 66, LIGHT, 6)
-            text(s, "Interview practice\nHow do you check duplicates?", px + 38, 718, 283, 56, 18, INK)
-    text(s, "*Kenya Data Analyst, 2023; n = 391. Tested sample: 39.6% demand-weighted coverage, not hiring odds. Panels illustrative.", 76, 811, 1440, 24, 16, MUTED)
+            label(s, "FROM THE WEB · SOURCED", px + 28, 545, 295, MUTED)
+            text(s, "“How do you handle\nmissing data?”", px + 28, 577, 296, 54, 21, INK, True)
+            text(s, "Reported question · source link", px + 28, 633, 296, 24, 16, MUTED)
+            box(s, px + 26, 666, 302, 108, LIGHT, 6)
+            text(s, "Score 3 / 5 · STAR check", px + 38, 675, 283, 26, 19, INK, True)
+            text(s, "Missing: the Result\nAdd: “…led to [your result]”", px + 38, 707, 283, 48, 18, INK)
+    text(s, f"Panels illustrative. Skill match % = share of a posting's skills you have, not a hiring probability. Tested brief: {e['coverage']}% coverage, n = {e['sample_size']}.",
+         76, 811, 1440, 24, 16, MUTED)
 
     s = slide("06  /  Evidence & honest limits", "A working product. Evidence you can inspect.",
-              "Real public Groq calls · synthetic CVs · strengths, rewrites, seven-day plans and tailored interview questions.",
-              notes="Main implementation owner confirms 73 passing backend unit-test methods. Separately, coach-acceptance-results.json records 48 passing public acceptance assertions and njia-coach-demo-results.json records nine passing recording assertions, totaling 57 new public assertions. No mocked responses. Desktop, mobile and recording used Groq openai/gpt-oss-20b. Observed elapsed times were 2.259 seconds desktop, 1.318 mobile and 2.260 recording including PDF processing; these are individual observations, not a latency benchmark. All three runs recorded no JavaScript errors and all observed API responses succeeded. The sample used 391 Kenya Data Analyst postings and returned 39.6% demand-weighted coverage, not hiring odds. Recording is exactly 90 seconds at normal speed. Semantic factuality is not guaranteed: the recorded rewrite added unsupported real-time sales monitoring, despite number/tool checks. Human review is required. No real-user adoption or employment impact is claimed.")
-    box(s, 76, 372, 666, 241, NAVY, 12)
-    label(s, "PASSED / TWO DISTINCT TEST LAYERS", 106, 395, 600, PALE)
-    text(s, "73", 106, 443, 270, 98, 82, IVORY, True, True)
-    text(s, "57", 435, 443, 270, 98, 82, ORANGE, True, True)
-    text(s, "backend tests", 110, 549, 290, 36, 25, PALE)
-    text(s, "public assertions", 439, 547, 276, 33, 24, PALE)
-    text(s, "48 acceptance + 9 recording", 439, 583, 278, 25, 18, PALE)
-    box(s, 780, 372, 748, 241, LIGHT, 12)
-    label(s, "LIVE GROQ / OBSERVED RESPONSE TIMES", 812, 395, 680, INK)
-    text(s, "2.259s desktop  /  1.318s mobile\n2.260s recording, including PDF processing\n0 JavaScript errors across these runs",
-         812, 451, 678, 110, 27, INK)
-    text(s, "Individual observations, not a performance benchmark.", 812, 580, 678, 27, 20, MUTED)
+              "Real public Groq calls · synthetic CVs · no mocked responses in the public checks.",
+              notes=f"Main implementation owner confirms {bt} passing backend unit-test methods. Separately, {acc} public acceptance assertions and {rec} recording assertions passed, totaling {total} public assertions. No mocked responses. Desktop, mobile and recording used {e['provider']} {e['model']}. Observed elapsed times were {seconds('desktop')} desktop, {seconds('mobile')} mobile and {seconds('recording_with_pdf')} recording including PDF processing; these are individual observations, not a latency benchmark. The runs recorded {e['javascript_errors']} JavaScript errors. The sample used {e['sample_size']} Kenya Data Analyst postings and returned {e['coverage']}% demand-weighted coverage, not hiring odds. New today: " + "; ".join(new_feature_parts()) + ". Skill-match percentages measure skill overlap and are not a hiring probability. Semantic factuality is not guaranteed: the recorded rewrite added unsupported real-time sales monitoring, despite number/tool checks, and rewrites that use the learner's answers are labelled for verification. Human review is required. No real-user adoption or employment impact is claimed.")
+    box(s, 76, 360, 666, 225, NAVY, 12)
+    label(s, "PASSED / TWO DISTINCT TEST LAYERS", 106, 381, 600, PALE)
+    text(s, str(bt), 106, 418, 300, 98, 82, IVORY, True, True)
+    text(s, str(total), 435, 418, 280, 98, 82, ORANGE, True, True)
+    text(s, "backend tests", 110, 519, 290, 36, 25, PALE)
+    text(s, "public assertions", 439, 518, 290, 33, 24, PALE)
+    text(s, f"{acc} acceptance + {rec} recording", 439, 553, 290, 25, 18, PALE)
+    box(s, 780, 360, 748, 225, LIGHT, 12)
+    label(s, "LIVE GROQ BRIEF / OBSERVED RESPONSE TIMES", 812, 381, 690, INK)
+    text(s, f"{seconds('desktop')} desktop  /  {seconds('mobile')} mobile\n{seconds('recording_with_pdf')} recording, including PDF processing\n"
+            f"{e['javascript_errors']} JavaScript errors across these runs", 812, 424, 690, 100, 27, INK)
+    text(s, "Individual observations, not a performance benchmark.", 812, 540, 690, 27, 20, MUTED)
+    box(s, 76, 603, 1452, 80, WHITE, 10)
+    box(s, 76, 603, 6, 80, ORANGE)
+    label(s, "NEW TODAY / FOLLOW-UPS · LIVE JOBS · WEB INTERVIEW QUESTIONS · ANSWER FEEDBACK", 106, 613, 1400, INK)
+    text(s, "  ·  ".join(new_feature_parts()), 106, 645, 1400, 28, 21, MUTED)
     for x, head, body in [
-        (76, "Data", "2023 sample, uneven country coverage.\nNot live vacancies or hiring probabilities."),
-        (573, "Human factual review", "Numbers/tools checked; unsupported\nbusiness-impact claims can still slip through."),
+        (76, "Data + match %", "2023 sample sets the priorities.\nMatch % is not a hiring probability."),
+        (573, "Human factual review", "Numbers/tools checked; unsupported\nclaims can still slip through."),
         (1070, "Impact", "No measured employment outcomes\nor real-user adoption claimed.")]:
-        text(s, head, x, 667, 452, 43, 30, INK, True, True)
-        text(s, body, x, 727, 456, 72, 23, MUTED)
+        text(s, head, x, 702, 470, 40, 28, INK, True, True)
+        text(s, body, x, 746, 470, 52, 21, MUTED)
 
     s = slide("07  /  Adoption plan & award fit", "Start small. Measure a useful next step.",
               "Proposed pilot with Kenyan learners and a training partner — recruitment has not started.",
-              notes="This is a proposed pilot, not adoption or a signed partnership. We propose recruiting ten Kenyan learners with one training partner, reviewing outputs with a facilitator and following up after seven days. Measure completion, factual rewrite acceptance, saved practice artifacts, usefulness and mobile friction; do not present target outcomes as achieved. Click Mobile fit is the practical mobile-first Kenyan learner journey, with Dhruzzz participating as Kenya ONLINE. Published Kenya-only scope aligns with the team context; final award eligibility is determined by organizers. Brightest fits skills and employability, and Artefact fits visible use of local data and AI. No award win or organizer endorsement is claimed.")
+              notes="This is a proposed pilot, not adoption or a signed partnership. We propose recruiting ten Kenyan learners with one training partner, reviewing outputs with a facilitator and following up after seven days. Measure completion, factual rewrite acceptance, whether follow-up answers were reflected, relevance of the live jobs shown, usefulness of answer feedback, saved practice artifacts and mobile friction; do not present target outcomes as achieved. Click Mobile fit is the practical mobile-first Kenyan learner journey, with Dhruzzz participating as Kenya ONLINE. Published Kenya-only scope aligns with the team context; final award eligibility is determined by organizers. Brightest fits skills and employability, and Artefact fits visible use of local data and AI. No award win or organizer endorsement is claimed.")
     for i, (tag, title, desc) in enumerate([
         ("RECRUIT", "10 learners + 1 partner", "Invite Kenyan career starters.\nObserve the mobile CV journey."),
-        ("REVIEW", "Human-check the advice", "Check whether rewrites preserve facts\nand priorities are understandable."),
-        ("FOLLOW UP", "Return after 7 days", "Count completed practice artifacts.\nAsk what helped and what blocked progress.")]):
+        ("REVIEW", "Human-check the advice", "Check that rewrites keep the facts\nand job matches are relevant."),
+        ("FOLLOW UP", "Return after 7 days", "Count practice answers and\napplications started. Ask what\nhelped and what blocked progress.")]):
         x = 76 + i * 497
         label(s, tag, x, 387, 455, MUTED)
         box(s, x, 433, 452, 4, ORANGE)
         text(s, title, x, 465, 454, 78, 33, INK, True, True)
-        text(s, desc, x, 560, 455, 97, 24, MUTED)
+        text(s, desc, x, 560, 465, 97, 24, MUTED)
     box(s, 76, 687, 1452, 117, NAVY, 12)
     label(s, "CLICK MOBILE / KENYA ONLINE", 108, 708, 570)
-    text(s, "Mobile-first guidance for Kenyan learners.", 680, 706, 805, 38, 28, IVORY, True)
+    text(s, "Mobile-first coaching for Kenyan learners.", 660, 706, 840, 38, 28, IVORY, True)
     text(s, "Award fit: practical phone-browser access · also aligned with Brightest (employability) and Artefact (Data & AI).",
-         108, 757, 1384, 28, 20, PALE)
+         108, 757, 1400, 28, 20, PALE)
 
+    demo_note = ("It shows the earlier brief flow and predates today's follow-up questions, live jobs, web interview "
+                 "questions and answer feedback. " if e["demo_predates_new_features"] else "")
     s = slide("08  /  Team Dhruzzz", "Turn experience into a clearer path.", dark=True,
-              notes=f"Close with the live product and source repository. Team: Eeshan Vaghjiani, Bhavin Mepani and Dhruvin Bhudia; Kenya ONLINE. The new recorded production demo is verified locally at exactly 90 seconds, normal speed, with captions. Slide 8 links to the published demo-v1 release asset: {DEMO_URL}. Ask for a Kenyan learner or training partner to run the proposed pilot.")
+              notes=f"Close with the live product and source repository. Team: Eeshan Vaghjiani, Bhavin Mepani and Dhruvin Bhudia; Kenya ONLINE. Our line: {TAGLINE} The published demo-v1 recording is exactly {e['video_seconds']} seconds, normal speed, with captions. {demo_note}Slide 8 links to it: {DEMO_URL}. Ask for a Kenyan learner or training partner to run the proposed pilot.")
     text(s, "Njia", 76, 281, 680, 133, 109, IVORY, True, True)
-    text(s, "Your evidence. Your market. Your next seven days.", 80, 425, 1415, 69, 39, ORANGE, serif=True)
+    text(s, TAGLINE, 80, 425, 1415, 69, 39, ORANGE, serif=True)
     label(s, "KENYA · ONLINE", 80, 532, 600, PALE)
     text(s, "Eeshan Vaghjiani\nBhavin Mepani\nDhruvin Bhudia", 80, 582, 620, 155, 34, IVORY)
     box(s, 794, 529, 734, 269, "203A52", 12)
     for y, tag, display, url in [
         (552, "LIVE", "gomycode-2026.vercel.app", "https://gomycode-2026.vercel.app"),
         (626, "SOURCE", "github.com/Eeshan-Vaghjiani/njia", "https://github.com/Eeshan-Vaghjiani/njia"),
-        (700, "90-SECOND DEMO", "njia-demo-90s.webm · published", DEMO_URL)]:
+        (700, f"{e['video_seconds']}-SECOND DEMO", "njia-demo-90s.webm · published", DEMO_URL)]:
         label(s, tag, 827, y, 630)
-        text(s, display, 827, y + 30, 669, 38, 22 if tag == "90-SECOND DEMO" else 24, IVORY, link=url)
-    text(s, "Pilot invitation: Kenyan learners + training partners", 80, 768, 690, 37, 24, PALE)
+        text(s, display, 827, y + 30, 669, 38, 22 if url == DEMO_URL else 24, IVORY, link=url)
+    text(s, "Pilot invitation: Kenyan learners + training partners", 80, 768, 700, 37, 24, PALE)
     return dict(total_postings=len(rows), countries=countries, kenya_postings=len(ke),
                 kenya_data_analyst_postings=len(da), chart=dict(demand))
 
@@ -275,9 +340,9 @@ def make_pptx():
     prs = Presentation()
     prs.slide_width, prs.slide_height = Inches(16), Inches(9)
     prs.core_properties.title = "Njia — Team Dhruzzz"
-    prs.core_properties.subject = "Evidence-grounded career guidance for Kenyan learners"
+    prs.core_properties.subject = "Ask. Match. Practise. Evidence-grounded career coaching for Kenyan learners"
     prs.core_properties.author = "Team Dhruzzz"
-    prs.core_properties.keywords = "Njia, Kenya, Dhruzzz, career guidance, historical demand"
+    prs.core_properties.keywords = "Njia, Kenya, Dhruzzz, career guidance, live jobs, interview practice, historical demand"
     for s in SLIDES:
         page = prs.slides.add_slide(prs.slide_layouts[6])
         page.background.fill.solid()
@@ -326,7 +391,7 @@ def make_html():
             else:
                 style += (f'font-size:{e["size"]}px;color:#{e["color"]};'
                           f'font-weight:{700 if e["bold"] else 400};text-align:{e["align"]};'
-                          f'font-family:{"Georgia" if e["serif"] else "Segoe UI"};')
+                          f'font-family:{SERIF if e["serif"] else SANS};')
                 body = html.escape(e["text"]).replace("\n", "<br>")
                 if e["link"]:
                     body = f'<a href="{html.escape(e["link"])}">{body}</a>'
@@ -363,7 +428,24 @@ def render():
         page.pdf(path=str(OUT / f"{STEM}.pdf"), prefer_css_page_size=True,
                  print_background=True, display_header_footer=False)
         browser.close()
-    print("Rendered 8 slide previews and PDF; HTML text-overflow check passed.")
+    print(f"Rendered 8 slide previews and PDF in {OUT}; HTML text-overflow check passed.")
+
+
+def required_values():
+    e = EVIDENCE
+    values = ["Dhruzzz", "Eeshan Vaghjiani", "Bhavin Mepani", "Dhruvin Bhudia", "18,371", "1,326",
+              str(e["sample_size"]), str(e["backend_tests"]), str(public_total()),
+              f'{e["acceptance_assertions"]} acceptance + {e["recording_assertions"]} recording',
+              f'{e["coverage"]}%', seconds("desktop"), seconds("mobile"), seconds("recording_with_pdf"),
+              TAGLINE, "not a hiring probability", "never CV text", "Uses your answer — verify",
+              "Which jobs can I apply for now?", "Am I ready for the interview?"]
+    if e["live_jobs_example"]:
+        values.append(f'{e["live_jobs_example"]["count"]:,} remote')
+    if e["web_questions_example"]:
+        values.append(f'{e["web_questions_example"]["count"]} source-linked')
+    if e["new_feature_tests"]:
+        values.append(f'{e["new_feature_tests"]} new-feature tests')
+    return values
 
 
 def validate():
@@ -375,21 +457,30 @@ def validate():
     assert len(prs.slides) == len(pdf) == 8
     slide_text = "\n".join(shape.text for s in prs.slides for shape in s.shapes if shape.has_text_frame)
     pdf_text = "\n".join(p.get_text() for p in pdf)
-    for value in ["Dhruzzz", "Eeshan Vaghjiani", "Bhavin Mepani", "Dhruvin Bhudia", "18,371", "1,326", "391", "57", "73", "48 acceptance + 9 recording", "39.6%", "2.259s", "1.318s", "2.260s"]:
+    flat_pdf_text = re.sub(r"\s+", " ", pdf_text)
+    for value in required_values():
         assert value.casefold() in slide_text.casefold(), value
-        assert value.casefold() in pdf_text.casefold(), value
+        assert value.casefold() in flat_pdf_text.casefold(), value
     notes_text = "\n".join(s.notes_slide.notes_text_frame.text for s in prs.slides)
     supporting_text = "\n".join((OUT / name).read_text(encoding="utf-8") for name in
                                 ["speaker-notes.md", "README.md", "production-evidence.json"])
+    filled = json.dumps(EVIDENCE)
     for content in [slide_text, pdf_text, notes_text, supporting_text]:
-        assert not re.search(r"\b72\b", content), "Stale backend test count"
+        if not re.search(r"\b72\b", filled):
+            assert not re.search(r"\b72\b", content), "Stale backend test count"
         assert "pending" not in content.casefold(), "Stale release status"
+    for content in [slide_text, pdf_text, notes_text]:
+        assert not re.search(r"\bNone\b", content), "Unfilled EVIDENCE value rendered as None"
     evidence = json.loads((OUT / "production-evidence.json").read_text(encoding="utf-8"))
-    assert evidence["backend_tests_passed"] == 73
-    assert (evidence["public_acceptance_assertions"], evidence["recording_assertions"], evidence["public_total"]) == (48, 9, 57)
+    assert evidence["backend_tests_passed"] == EVIDENCE["backend_tests"]
+    assert (evidence["public_acceptance_assertions"], evidence["recording_assertions"], evidence["public_total"]) == (
+        EVIDENCE["acceptance_assertions"], EVIDENCE["recording_assertions"], public_total())
     assert evidence["public_acceptance_assertions"] + evidence["recording_assertions"] == evidence["public_total"]
     assert "human factual review required" in evidence["factual_limit"].casefold()
+    assert evidence["unverified_new_feature_fields"] == [k for k in NEW_FEATURE_KEYS if EVIDENCE[k] is None]
     assert "Semantic factuality is not guaranteed" in notes_text
+    assert "not a hiring probability" in notes_text
+    assert "never CV text" in notes_text
     pptx_links = [r.hyperlink.address for shape in prs.slides[7].shapes if shape.has_text_frame
                   for p in shape.text_frame.paragraphs for r in p.runs]
     assert DEMO_URL in pptx_links
@@ -416,24 +507,99 @@ def validate():
         sheet.paste(img, (x, y))
         draw.text((x, y - 20), f"SLIDE {i+1:02d}", fill="#14283F")
     sheet.save(OUT / "contact-sheet.png")
+    bt, acc, rec, total = (EVIDENCE["backend_tests"], EVIDENCE["acceptance_assertions"],
+                           EVIDENCE["recording_assertions"], public_total())
     result = dict(pptx_slides=len(prs.slides), pdf_pages=len(pdf), aspect_ratio="16:9",
                   pptx_bytes=(OUT / f"{STEM}.pptx").stat().st_size,
                   pdf_bytes=(OUT / f"{STEM}.pdf").stat().st_size,
                   checks=["Slide/page count", "Required content in PPTX and PDF", "PPTX shape bounds",
                           "Speaker notes on all slides", "PDF searchable text", "PDF aspect ratio",
-                          "73 backend tests; 57 public assertions = 48 + 9", "No stale count or pending release text",
-                          "Published demo URL in PPTX, PDF and HTML", "Human factual-review caveat retained"],
-                  advisor_validation="73 backend tests confirmed by main owner; 48 public acceptance + 9 recording assertions verified from artifacts; human factual review required")
+                          f"{bt} backend tests; {total} public assertions = {acc} + {rec}",
+                          "No stale count, unfilled value or stale release text",
+                          "Published demo URL in PPTX, PDF and HTML", "Human factual-review caveat retained",
+                          "Not-a-hiring-probability and web-search privacy boundary retained"],
+                  unverified_new_feature_fields=evidence["unverified_new_feature_fields"],
+                  advisor_validation=f"{bt} backend tests confirmed by main owner; {acc} public acceptance + {rec} recording assertions; human factual review required")
     (OUT / "validation.json").write_text(json.dumps(result, indent=2), encoding="utf-8")
     print(json.dumps(result, indent=2))
 
 
+def write_supporting(evidence):
+    e = EVIDENCE
+    (OUT / "data-evidence.json").write_text(json.dumps(evidence, indent=2), encoding="utf-8")
+    (OUT / "speaker-notes.md").write_text("# Njia — speaker notes\n\n" + "\n\n".join(
+        f'## {i+1}. {s["title"].replace(chr(10), " ")}\n\n{s["notes"]}' for i, s in enumerate(SLIDES)), encoding="utf-8")
+    new_features = "; ".join(new_feature_parts())
+    (OUT / "README.md").write_text(f'''# Njia — Team Dhruzzz
+
+Local eight-slide final deck in navy, ivory and orange: **{TAGLINE}** The PPTX contains
+editable text, shapes, chart bars and phone-flow illustrations; all slides include speaker
+notes. The PDF is printed from the matching local HTML with Chromium/Playwright. No network
+assets or model calls are required to build these files.
+
+## Deliverables
+- `Njia-Dhruzzz.pptx` — editable presentation, 8 slides.
+- `Njia-Dhruzzz.pdf` — searchable PDF, 8 pages.
+- `Njia-Dhruzzz.html` — matching printable HTML.
+- `speaker-notes.md` — presentation narration and supporting qualifications.
+- `contact-sheet.png` and `slide-01.png` … `slide-08.png` — visual previews.
+- `data-evidence.json` — locally recalculated denominators and chart values.
+- `production-evidence.json` — every tested or observed figure used in the deck.
+- `validation.json` — file sizes and structural validation results.
+
+## Product story
+Njia asks before it advises: after the CV it asks a few follow-up questions whose answers
+reshape suggested skills and the brief. It matches the learner to live jobs they can apply
+for, with a skill-match % (skill overlap, not a hiring probability), and supports interview
+practice with source-linked questions from the web and AI feedback on typed answers. Web
+searches receive only role, country and skill names — never CV text. Provider failures fall
+back to labelled curated or deterministic output.
+
+## Current production evidence
+{e["backend_tests"]} backend test methods passed ({e["backend_count_source"].lower()}), distinct from
+{public_total()} public assertions: {e["acceptance_assertions"]} acceptance + {e["recording_assertions"]} recording.
+Real {e["provider"]} / {e["model"]}: {seconds("desktop")} desktop, {seconds("mobile")} mobile, {seconds("recording_with_pdf")} recording including PDF.
+Individual observations, not a performance benchmark. {e["javascript_errors"]} JavaScript errors in these runs.
+Sample: {e["sample_size"]} historical Kenya Data Analyst postings, {e["coverage"]}% demand-weighted coverage, not hiring odds.
+New features: {new_features}.
+See `production-evidence.json` for the precise count breakdown and unverified fields.
+
+CV rewrites checked for numbers/tools, still require human factual review. The recording
+contains unsupported “real-time sales monitoring” in a rewrite. The checks do not guarantee
+semantic factuality. Rewrites that use the learner's own answers are labelled for verification.
+The deck's before/after example is illustrative and hand-authored.
+
+## Published demo
+The published `demo-v1` recording is exactly {e["video_seconds"]} seconds. Slide 8 links to it:
+{DEMO_URL}
+
+Illustrative persona, CV output and phone panels are explicitly labeled. The pilot is a plan,
+not adoption. The priority dataset is a 2023 historical sample, not current vacancies. CV
+transfer to AI requires opt-in and basic, best-effort PII redaction; there is no application
+database persistence claim beyond the application itself.
+
+## Rebuild locally (from project root)
+```bash
+.venv/bin/python scripts/build_final_deck.py --all
+.venv/bin/python scripts/build_final_deck.py --all --out /tmp/opencode/deck
+```
+On Windows use `.venv\\Scripts\\python.exe`. `--all` builds the PPTX/HTML, renders the PDF and
+PNG previews with Playwright, then validates. Update `EVIDENCE` in
+`scripts/build_final_deck.py` before rebuilding. The builder writes only inside `--out`
+(default `presentation/`).
+''', encoding="utf-8")
+
+
 def main():
+    global OUT
     parser = argparse.ArgumentParser()
     parser.add_argument("--render-only", action="store_true")
     parser.add_argument("--validate", action="store_true")
+    parser.add_argument("--all", action="store_true", help="build, render PDF/PNGs, then validate")
+    parser.add_argument("--out", default=str(ROOT / "presentation"), help="output directory (default: presentation/)")
     args = parser.parse_args()
-    OUT.mkdir(exist_ok=True)
+    OUT = Path(args.out).expanduser().resolve()
+    OUT.mkdir(parents=True, exist_ok=True)
     if args.render_only:
         render()
         return
@@ -444,56 +610,12 @@ def main():
     assert len(SLIDES) == 8
     make_pptx()
     make_html()
-    (OUT / "data-evidence.json").write_text(json.dumps(evidence, indent=2), encoding="utf-8")
-    (OUT / "speaker-notes.md").write_text("# Njia — speaker notes\n\n" + "\n\n".join(
-        f'## {i+1}. {s["title"].replace(chr(10), " ")}\n\n{s["notes"]}' for i, s in enumerate(SLIDES)), encoding="utf-8")
-    (OUT / "README.md").write_text('''# Njia — Team Dhruzzz
-
-Local eight-slide final deck in navy, ivory and orange. The PPTX contains editable text,
-shapes, chart bars and phone-flow illustrations; all slides include speaker notes.
-The PDF is printed from the matching local HTML with Chromium/Playwright. No network
-assets or model calls are required to build these files.
-
-## Deliverables
-- `Njia-Dhruzzz.pptx` — editable presentation, 8 slides.
-- `Njia-Dhruzzz.pdf` — searchable PDF, 8 pages.
-- `Njia-Dhruzzz.html` — matching printable HTML.
-- `speaker-notes.md` — presentation narration and supporting qualifications.
-- `contact-sheet.png` and `slide-01.png` … `slide-08.png` — visual previews.
-- `data-evidence.json` — locally recalculated denominators and chart values.
-- `validation.json` — file sizes and structural validation results.
-
-## Current production evidence
-73 backend test methods passed (main implementation owner confirmation), distinct from
-57 new public assertions: 48 acceptance + 9 recording, verified from the local JSON artifacts.
-Real Groq / openai/gpt-oss-20b: 2.259s desktop, 1.318s mobile, 2.260s recording including PDF.
-Individual observations, not a performance benchmark. No JavaScript errors in these runs.
-Sample: 391 historical Kenya Data Analyst postings, 39.6% demand-weighted coverage, not hiring odds.
-See `production-evidence.json` for sources and the precise count breakdown.
-
-CV rewrites checked for numbers/tools, still require human factual review. The recording
-contains unsupported “real-time sales monitoring” in a rewrite. The checks do not guarantee
-semantic factuality. The deck's before/after example is illustrative and human-reviewed.
-
-## Published demo
-The production demo is exactly 90 seconds. Slide 8 links to the published `demo-v1` asset:
-https://github.com/Eeshan-Vaghjiani/njia/releases/download/demo-v1/njia-demo-90s.webm
-
-Illustrative persona, CV output and phone panels are explicitly labeled. The pilot is a plan,
-not adoption. The dataset is a 2023 historical sample, not current vacancies. CV transfer to
-AI requires opt-in and basic, best-effort PII redaction; there is no application database
-persistence claim beyond the application itself.
-
-## Rebuild locally (from project root)
-```powershell
-python scripts/build_final_deck.py
-.venv/Scripts/python.exe scripts/build_final_deck.py --render-only
-python scripts/build_final_deck.py --validate
-```
-The builder writes only inside `presentation/`. Existing decks in the project root are untouched.
-''', encoding="utf-8")
-    print("Built editable 8-slide PPTX + matching HTML in presentation/.")
+    write_supporting(evidence)
+    print(f"Built editable 8-slide PPTX + matching HTML in {OUT}.")
     print(json.dumps(evidence, indent=2))
+    if args.all:
+        render()
+        validate()
 
 
 if __name__ == "__main__":

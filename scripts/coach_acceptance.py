@@ -130,10 +130,14 @@ def main():
                       and not page.locator("#consent").is_checked())
                 page.locator("#build-brief").click()
                 expect(page.locator("#error-message")).to_contain_text("consent")
-                check(label + "_consent_blocks_network", audit.count("/api/advise") == 0)
+                check(label + "_consent_blocks_network", audit.count("/api/advise") == 0 and audit.count("/api/questions") == 0)
                 page.locator("#consent").check()
+                questions, _ = click_api(page, "#build-brief", "/api/questions")
+                expect(page.locator("#followup-panel")).to_be_visible()
+                check(label + "_followup_questions_shown", 2 <= len(questions["questions"]) <= 5
+                      and audit.count("/api/advise") == 0, {"mode": questions.get("mode"), "model": questions.get("model")})
                 reserve("acceptance_" + label)
-                data, elapsed = click_api(page, "#build-brief", "/api/advise")
+                data, elapsed = click_api(page, "#followup-skip", "/api/advise")
                 flow.update(response=data, elapsed_seconds=elapsed)
                 expect(page.locator("#results")).to_be_visible()
                 a, m = data["advisor"], data["market"]
@@ -210,5 +214,7 @@ def main():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--verify-saved-downloads", action="store_true")
+    parser.add_argument("--base-url", default=BASE, help="Run against another origin, e.g. http://127.0.0.1:8000")
     args = parser.parse_args()
+    BASE = args.base_url.rstrip("/")
     raise SystemExit(verify_saved_downloads() if args.verify_saved_downloads else main())

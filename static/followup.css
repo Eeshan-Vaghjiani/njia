@@ -1,0 +1,33 @@
+/* Follow-up skill questions. Mobile-first; uses the coach.css design tokens. */
+#followup-panel{margin:20px 0 4px;padding:20px 0 4px;border-top:1px solid var(--line)}
+#followup-panel>.eyebrow{color:var(--orange);margin-bottom:8px}
+#followup-title{font-size:25px;letter-spacing:-.6px;line-height:1.2;scroll-margin-top:20px}
+#followup-panel .followup-intro{margin:10px 0 8px}
+.followup-mode{margin:0 0 4px}
+.followup-mode .badge{color:var(--muted);font-size:15px}
+.followup-mode:empty{display:none}
+.followup-question{margin:18px 0 0;padding:16px 0 0;border-top:1px dashed var(--line)}
+.followup-question legend{float:left;width:100%;padding:0;color:var(--navy);font-weight:700;line-height:1.45;overflow-wrap:anywhere}
+.followup-question legend+*{clear:both}
+.followup-count{display:block;color:var(--orange);font-size:14px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px}
+#followup-panel .followup-why{margin:6px 0 0;clear:both}
+.followup-options{display:grid;grid-template-columns:1fr;gap:8px;margin:12px 0 0;clear:both}
+@media(min-width:520px){.followup-options{grid-template-columns:1fr 1fr}}
+@media(min-width:761px){.has-results .followup-options{grid-template-columns:1fr}}
+#followup-panel label.followup-option{position:relative;display:block;margin:0;font-weight:400;cursor:pointer}
+#followup-panel .followup-option input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
+#followup-panel .followup-option span{display:flex;align-items:center;gap:10px;min-height:48px;height:100%;padding:10px 14px;border:1px solid #bfc5c3;border-radius:24px;background:var(--white);color:var(--navy);line-height:1.3;transition:background-color .15s,border-color .15s}
+#followup-panel .followup-option span::before{content:"";flex:0 0 18px;width:18px;height:18px;border:2px solid #8b928c;border-radius:50%;background:var(--white);box-sizing:border-box}
+#followup-panel .followup-option:hover span{border-color:var(--orange);background:#f5eee4}
+#followup-panel .followup-option input:checked+span{background:var(--navy);border-color:var(--navy);color:var(--white);font-weight:600}
+#followup-panel .followup-option input:checked+span::before{border-color:var(--white);background:var(--orange-bright);box-shadow:inset 0 0 0 3px var(--navy)}
+#followup-panel .followup-option input:focus-visible+span{outline:3px solid var(--orange);outline-offset:3px}
+#followup-panel .followup-option input:disabled+span{opacity:.55;cursor:wait}
+#followup-panel textarea{min-height:96px;margin-top:10px;clear:both}
+.followup-actions{flex-direction:column;align-items:stretch;gap:6px;margin-top:22px}
+#followup-submit{width:100%;justify-content:space-between;text-align:left}
+#followup-skip{align-self:center}
+@media(min-width:620px){.followup-actions{flex-direction:row;align-items:center;gap:18px}#followup-submit{width:auto}#followup-skip{align-self:auto}}
+@media(min-width:761px){.has-results .followup-actions{flex-direction:column;align-items:stretch}.has-results #followup-submit{width:100%}.has-results #followup-skip{align-self:center}}
+@media(max-width:760px){#followup-title{font-size:23px}}
+@media(prefers-reduced-motion:reduce){#followup-panel .followup-option span{transition:none}}

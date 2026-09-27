@@ -17,8 +17,8 @@ RUN python -m pip install --no-cache-dir --only-binary=:all: -r requirements.txt
     && useradd --uid 10001 --gid njia --no-log-init --create-home njia
 
 # Deliberate allowlist: never copy the workspace, .env, CVs, or artifacts.
-COPY njia/__init__.py njia/app.py njia/assessment.py njia/coaching.py njia/engine.py njia/uploads.py njia/advisor.py ./njia/
-COPY static/index.html static/app.js static/styles.css static/sample-cv.txt static/coach.html static/coach.js static/coach.css ./static/
+COPY njia/__init__.py njia/app.py njia/assessment.py njia/coaching.py njia/engine.py njia/uploads.py njia/advisor.py njia/groq_client.py njia/questions.py njia/jobs.py njia/interview.py ./njia/
+COPY static/index.html static/app.js static/styles.css static/sample-cv.txt static/coach.html static/coach.js static/coach.css static/followup.css static/jobs.js static/jobs.css static/interview.js static/interview.css ./static/
 COPY data/africa_jobs_subset.jsonl ./data/africa_jobs_subset.jsonl
 
 USER 10001:10001

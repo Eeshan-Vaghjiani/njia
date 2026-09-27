@@ -7,7 +7,12 @@
   <meta name="description" content="Njia: a practical CV review, a clearer next step, and a week of career actions for Kenya.">
   <title>Njia — Your next move</title>
   <link rel="stylesheet" href="/static/coach.css">
+  <link rel="stylesheet" href="/static/followup.css">
+  <link rel="stylesheet" href="/static/jobs.css">
+  <link rel="stylesheet" href="/static/interview.css">
   <script src="/static/coach.js" defer></script>
+  <script src="/static/jobs.js" defer></script>
+  <script src="/static/interview.js" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#coach-form">Skip to your CV</a>
@@ -59,6 +64,14 @@
           <label class="check-label" for="consent"><input id="consent" type="checkbox" aria-describedby="consent-help"><span>I agree to send my CV text, with basic contact redaction, to the AI provider for career advice. Review/remove personal details first.</span></label>
           <p id="consent-help" class="hint">For uploads, this also permits server processing of the file. Basic redaction is not full anonymisation. Optional preview only reads the file; you’ll agree again before AI advice.</p>
         </div>
+        <section id="followup-panel" class="followup-panel" aria-labelledby="followup-title" hidden>
+          <p class="eyebrow">BEFORE YOUR BRIEF</p>
+          <h2 id="followup-title" tabindex="-1">A few quick questions so Njia knows your skills</h2>
+          <p class="hint followup-intro">Your CV can’t show everything. Answer only what’s true, and skip anything. Answers are self-reported and used only for this brief.</p>
+          <p id="followup-mode" class="followup-mode"></p>
+          <div id="followup-questions"></div>
+          <div class="inline-actions followup-actions"><button id="followup-submit" class="primary-button" type="button"><span>Build my brief with these answers</span><span aria-hidden="true">↗</span></button><button id="followup-skip" class="text-button" type="button">Skip and build now</button></div>
+        </section>
         <div id="status" class="status" role="status" aria-live="polite" aria-atomic="true" hidden></div>
         <div id="error-panel" class="error-panel" role="alert" hidden><p id="error-message"></p><div class="inline-actions"><button id="retry" type="button" class="secondary-button">Try again</button><button id="market-fallback" type="button" class="text-button" hidden>Use market evidence only</button></div></div>
         <div class="submit-bar"><button id="build-brief" class="primary-button" type="submit"><span>Build my career brief</span><span aria-hidden="true">↗</span></button><button id="cancel-request" class="text-button" type="button" hidden>Cancel request</button></div>
@@ -73,6 +86,7 @@
       <p id="brief-context" class="muted"></p>
       <div id="stale-note" class="notice" role="status" hidden></div>
       <div id="ai-provenance" class="provenance"></div>
+      <p id="answers-used" class="notice" hidden></p>
       <article id="summary-card" class="summary-card"><p class="eyebrow">THE SHORT VERSION</p><p id="advisor-summary" class="summary-text"></p><div id="strengths" class="strengths"></div></article>
 
       <section class="result-section" aria-labelledby="market-title">
@@ -83,11 +97,23 @@
         <div id="priority-cards" class="priority-grid"></div>
       </section>
 
-      <section class="result-section" aria-labelledby="rewrite-title"><p class="eyebrow">02 / SAY IT BETTER</p><h3 id="rewrite-title">Let your experience do the talking.</h3><p class="hint">Draft suggestions, not new achievements. Check every fact before using.</p><div id="cv-improvements"></div></section>
+      <section id="live-jobs-section" class="result-section" aria-labelledby="live-jobs-title">
+        <div class="section-heading"><div><p class="eyebrow">02 / APPLY WHILE IT’S OPEN</p><h3 id="live-jobs-title">Live jobs you can apply for.</h3></div><button id="refresh-jobs" class="text-button" type="button" hidden>Refresh ↻</button></div>
+        <p class="hint">Current postings open to applicants in your country, matched against your skills. Always check a posting on its source site before applying.</p>
+        <div id="live-jobs" aria-live="polite"></div>
+      </section>
 
-      <section class="result-section" aria-labelledby="plan-title"><div class="section-heading"><div><p class="eyebrow">03 / MAKE A LITTLE PROGRESS</p><h3 id="plan-title">Your next seven days.</h3></div><button id="copy-checklist" class="text-button" type="button">Copy checklist ↗</button></div><p class="hint">Small actions. Something tangible to show. Tick off progress for this session.</p><ol id="seven-day-plan" class="day-list"></ol></section>
+      <section class="result-section" aria-labelledby="rewrite-title"><p class="eyebrow">03 / SAY IT BETTER</p><h3 id="rewrite-title">Let your experience do the talking.</h3><p class="hint">Draft suggestions, not new achievements. Check every fact before using.</p><div id="cv-improvements"></div></section>
 
-      <section id="interview-section" class="interview-card" aria-labelledby="interview-title"><p class="eyebrow">04 / BE READY TO EXPLAIN IT</p><h3 id="interview-title">One question to practise.</h3><p id="interview-question" class="interview-question"></p><details id="interview-guidance"><summary>What a good answer includes</summary><p id="interview-rubric"></p></details></section>
+      <section class="result-section" aria-labelledby="plan-title"><div class="section-heading"><div><p class="eyebrow">04 / MAKE A LITTLE PROGRESS</p><h3 id="plan-title">Your next seven days.</h3></div><div class="inline-actions"><button id="copy-checklist" class="text-button" type="button">Copy checklist ↗</button><a id="whatsapp-checklist" class="text-button" href="https://wa.me/" target="_blank" rel="noopener noreferrer">Send to WhatsApp ↗</a></div></div><p class="hint">Small actions. Something tangible to show. Tick off progress for this session. WhatsApp opens with your checklist; you choose where to send it.</p><ol id="seven-day-plan" class="day-list"></ol></section>
+
+      <section id="interview-section" class="interview-card" aria-labelledby="interview-title"><p class="eyebrow">05 / BE READY TO EXPLAIN IT</p><h3 id="interview-title">One question to practise.</h3><p id="interview-question" class="interview-question"></p><details id="interview-guidance"><summary>What a good answer includes</summary><p id="interview-rubric"></p></details></section>
+
+      <section id="interview-research-section" class="result-section" aria-labelledby="web-questions-title">
+        <div class="section-heading"><div><p class="eyebrow">06 / WHAT INTERVIEWERS ACTUALLY ASK</p><h3 id="web-questions-title">Real interview questions. Then practise.</h3></div></div>
+        <p class="hint">Questions candidates report being asked, found on the web with sources. Practise an answer and get feedback.</p>
+        <div id="interview-research" aria-live="polite"></div>
+      </section>
 
       <section id="skill-review" class="result-section skill-review" aria-labelledby="skills-title"><p class="eyebrow">YOUR EXPERIENCE, YOUR CALL</p><h3 id="skills-title">Review AI-detected skills</h3><p id="skills-help" class="hint">Keep only skills you can support. These suggestions are not verified proficiency. Confirming updates market evidence, not the AI brief.</p><div id="skill-chips" class="chips"></div><div class="skill-controls"><label class="sr-only" for="skill-select">Add a skill from the dataset</label><select id="skill-select"><option value="">Add a skill…</option></select><button id="add-skill" class="secondary-button" type="button">Add</button></div><button id="confirm-skills" class="secondary-button" type="button">Confirm skills & update market</button><p id="skill-status" role="status" class="hint"></p></section>
 

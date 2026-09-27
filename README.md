@@ -2,23 +2,25 @@
 
 **[Live app](https://gomycode-2026.vercel.app) · [Source](https://github.com/Eeshan-Vaghjiani/njia) · [Presentation PDF](https://github.com/Eeshan-Vaghjiani/njia/blob/main/presentation/Njia-Dhruzzz.pdf) · [90-second demo](https://github.com/Eeshan-Vaghjiani/njia/releases/download/demo-v1/njia-demo-90s.webm)**
 
-A mobile-first career coach for Kenyan tech and data job seekers. Turn experience into evidence-linked strengths, draft CV improvements and a practical week of next steps.
+A mobile-first career coach for Kenyan tech and data job seekers. Njia asks what your CV doesn't say, turns your experience into evidence-linked strengths and a practical week, matches you to **live jobs you can apply for**, and preps you with **real interview questions found on the web**.
 
 **Team Dhruzzz · Kenya · ONLINE**
 Eeshan Vaghjiani (lead), Bhavin Mepani and Dhruvin Bhudia. Primary award: **Click Mobile — Mobile-First Impact Award**.
 
 ## The problem
 
-Job seekers can struggle to explain their experience, identify useful skill gaps and decide what to practise next. Generic advice rarely connects their CV, a target role and tomorrow’s action. Njia brings these decisions into one browser journey.
+Job seekers can struggle to explain their experience, identify useful skill gaps, find openings they are actually eligible for and prepare for real interviews. Generic advice rarely connects their CV, a target role, today's vacancies and tomorrow's action. Njia brings these decisions into one browser journey.
 
 ## How it works
 
-1. Choose a country and target role. Upload PDF/DOCX/TXT, paste experience, or try the labelled fictional sample.
-2. Review the text and consent to AI processing. Groq builds a personal brief with strengths, three priorities, draft rewrites, seven daily actions and interview guidance.
-3. Review suggested skills and recalculate historical market evidence. Changing skills updates the figures; changing CV/target requires rebuilding the AI brief.
-4. Copy the checklist or download an HTML brief. CV-evidence quotes and rewrite sections are excluded by default; other personalised advice can still reveal experience details.
+1. **Give context.** Choose a country and target role. Upload PDF/DOCX/TXT, paste experience, or try the labelled fictional sample, then consent to AI processing.
+2. **Njia asks before it advises.** Groq reads the redacted CV and asks 3–5 quick follow-up questions: skills the CV doesn't clearly show (*Used it at work / in a project or course / still learning / not yet*) and one detail question about an outcome. Answering is optional; **Skip** always works.
+3. **A brief shaped by your answers.** Strengths with exact CV quotes, three priorities, draft rewrites (which may use facts you supplied, labelled *Uses your answer — verify*), seven daily actions and interview guidance. Answers add or remove suggested skills.
+4. **Live jobs you can apply for.** Remote postings from the [Himalayas](https://himalayas.app) jobs API whose location restrictions include your country (or are worldwide), plus local postings found by Groq's built-in web search and kept only when their link appears in the search tool's results. Each job shows eligibility, posting date, matched and missing skills and a skill-overlap %, and links to the source to apply.
+5. **Real interview questions, then practise.** Groq web search finds questions candidates report being asked for the role, each with its source link. Practise an answer (separate consent) and get a 1–5 score, a STAR checklist, strengths, improvements and a stronger outline that must not add numbers or tools you didn't mention.
+6. **Take it with you.** Review skills and recalculate historical market evidence, send the seven-day checklist to WhatsApp, copy it, or download an HTML brief. CV-evidence quotes and rewrite sections are excluded by default.
 
-**Try it:** open the live app → choose the sample → review and consent → build your brief → inspect the priorities and download. If the provider is unavailable or its output fails validation, Njia returns a clearly labelled curated brief.
+**Try it:** open the live app → choose the sample → consent → *Build my career brief* → answer the quick questions → explore priorities, live jobs and interview practice. If a provider is unavailable or its output fails validation, Njia returns a clearly labelled curated brief, curated questions or checklist feedback instead.
 
 ## Screenshots
 
@@ -69,16 +71,18 @@ These are engineering checks, not independent model-accuracy or employment-outco
 
 ## Privacy and limitations
 
-- **Consented CV text goes to Groq.** Basic contact scrubbing is best effort, not anonymization; names, employers and other identifying details may remain. Remove sensitive details before consenting.
+- **Consented CV text goes to Groq** (follow-up questions and the brief). Basic contact scrubbing is best effort, not anonymization; names, employers and other identifying details may remain. Remove sensitive details before consenting. Practice answers go to Groq only with their own consent checkbox.
+- **Web searches never receive CV text.** Live-job and interview-question searches send only the role, country and top market skill names to Groq's built-in browser search (powered by Exa). Results are cached in server memory per role/country (jobs 1–3 h, questions 6 h).
+- **Live postings are third-party listings.** Njia shows only postings open to your country according to the listing, links to the source (Himalayas credited as required) and drops web results whose link can't be found in the search results. It does not verify employers, deadlines or eligibility beyond the listing. A found source proves the search returned that page, not that every word is quoted exactly. Confirm each posting on the source site before applying. Match % is skill overlap with the skills Njia can detect in the posting, not a hiring probability.
 - Uploads are parsed on the hosting server. The app uses request/browser memory with **no application-level CV storage**, accounts, analytics or user database. This does not describe hosting/Groq retention or guarantee secure erasure. Downloads remain on the user’s device.
-- **Review every generated claim.** Validation cannot eliminate hallucinations; an observed rewrite invented “real-time sales monitoring.” Suggestions are drafts, with no factual, qualification or employment guarantee.
-- Evidence comes from **18,371 historical 2023 tech/data postings across ten African/MENA countries**, not live vacancies or a representative labour-market survey. Below 50 local role postings, Njia labels a broader ten-country sample. Coverage measures top-15 skill demand, not proficiency or hiring odds.
+- **Review every generated claim.** Validation cannot eliminate hallucinations; an observed rewrite invented “real-time sales monitoring”, and an observed practice outline added an unstated purpose. Suggestions are drafts, with no factual, qualification or employment guarantee.
+- Market figures come from **18,371 historical 2023 tech/data postings across ten African/MENA countries**, not live vacancies or a representative labour-market survey. Below 50 local role postings, Njia labels a broader ten-country sample. Coverage measures top-15 skill demand, not proficiency or hiring odds. Live jobs never change these historical figures.
 - Prepared data documentation attributes the corpus to [lukebarousse/data_jobs](https://huggingface.co/datasets/lukebarousse/data_jobs) and identifies Apache-2.0; provenance/licensing were not independently verified.
 - Browser uploads are capped at 4,000,000 bytes; the parser accepts 5 MiB. Scanned PDFs need external OCR or pasted text.
 
 ## Stack and documentation
 
-Python/FastAPI, static HTML/CSS/JavaScript, Groq, scikit-learn historical retrieval, unittest and Playwright; hosted on Vercel. OpenCode assisted coding, documentation and review. The eight-page deck was generated locally with python-pptx and Playwright. See the disclosure for actual AI use and boundaries.
+Python/FastAPI, static HTML/CSS/JavaScript, Groq (`openai/gpt-oss-20b`, JSON mode and built-in `browser_search`), the Himalayas public jobs API, scikit-learn historical retrieval, unittest and Playwright; hosted on Vercel. OpenCode assisted coding, documentation and review. The eight-page deck was generated locally with python-pptx and Playwright. See the disclosure for actual AI use and boundaries.
 
 - [Deployment](docs/DEPLOYMENT.md) · [AI and data disclosure](docs/AI_DISCLOSURE.md)
 - [Submission answers](docs/SUBMISSION_DRAFT.md) · [Final checklist](docs/FINAL_CHECKLIST.md) · [Official requirements](docs/HACKATHON_REQUIREMENTS.md)

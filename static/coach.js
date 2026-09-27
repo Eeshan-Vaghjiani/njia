@@ -4,13 +4,17 @@
   const esc = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({"&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"}[c]));
   const list = (value) => Array.isArray(value) ? value : [];
   const pct = (value) => typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 100 ? `${value}%` : "Not available";
-  const state = {meta:null, tab:"upload", advisor:null, market:null, briefTarget:null, briefText:null, marketTarget:null, skills:new Set(), confirmed:[], completed:new Set(), reviewed:false, busy:false, controller:null, request:0, retry:null, synthetic:false};
+  const state = {meta:null, tab:"upload", advisor:null, market:null, briefTarget:null, briefText:null, marketTarget:null, skills:new Set(), confirmed:[], completed:new Set(), reviewed:false, busy:false, controller:null, request:0, retry:null, synthetic:false, followup:null, answers:[]};
   const SAMPLE = "SYNTHETIC SAMPLE — fictional candidate\nNairobi, Kenya | Junior data analyst\n\nPROFILE\nEarly-career operations assistant moving into data analysis, with a diploma in business information technology.\n\nEXPERIENCE\nOperations Assistant, fictional Nairobi retail cooperative, 2024–2025\nUsed Excel pivot tables to summarise weekly sales across three branches.\nChecked stock records against sales spreadsheets and flagged duplicate entries for the supervisor.\nPrepared a monthly sales summary and explained changes to the operations team.\n\nPROJECT\nBuilt a Power BI dashboard using a synthetic retail dataset to compare sales by product and branch.\nUsed SQL SELECT, JOIN and GROUP BY queries to answer sales questions in a personal practice project.\nDocumented the data-cleaning steps and checked totals against the source spreadsheet.\n\nNEXT STEP\nSeeking a junior Data Analyst role in Kenya. I want to learn Python; I have not used it in a project yet.";
   const target = () => ({country:$("country").value, role:$("role").value});
   const sameTarget = (a, b) => a && b && a.country === b.country && a.role === b.role;
   const label = (id) => state.meta?.skills?.find((s) => s.id === id)?.label || id;
   const skillDirty = () => [...state.skills].sort().join("\0") !== [...state.confirmed].sort().join("\0");
   const briefStale = () => !!state.advisor && (!sameTarget(target(), state.briefTarget) || state.briefText !== $("cv-text").value || (state.tab === "upload" && !!$("cv-file").files[0]));
+  const snapshot = () => ({target: state.briefTarget || state.marketTarget || target(), currentTarget: target(), marketTarget: state.marketTarget, skills: [...state.confirmed], reviewed: state.reviewed, advisor: state.advisor, market: state.market, synthetic: state.synthetic, meta: state.meta, stale: briefStale()});
+  // Feature modules (jobs.js, interview.js) render from these events and never mutate coach state.
+  const emit = (name) => document.dispatchEvent(new CustomEvent(`njia:${name}`, {detail: snapshot()}));
+  window.NjiaCoach = Object.freeze({snapshot, label});
   function status(message, busy = false) { $("status").textContent = message; $("status").hidden = !message; $("status").dataset.busy = String(busy); }
   function clearError() { $("error-panel").hidden = true; state.retry = null; }
   function showError(error, retry, fallback = false) {
@@ -35,6 +39,7 @@
     $("input-fields").disabled = value;
     ["build-brief", "reset", "confirm-skills", "add-skill", "skill-select", "retry", "retry-meta", "market-fallback", "download-report"].forEach((id) => { $(id).disabled = value; });
     $("skill-chips").querySelectorAll("button").forEach((b) => { b.disabled = value; });
+    $("followup-panel").querySelectorAll("fieldset, button").forEach((el) => { el.disabled = value; });
     $("cancel-request").hidden = !value; $("coach-form").setAttribute("aria-busy", String(value));
     $("build-brief").firstElementChild.textContent = value ? "Working on your next move…" : state.advisor ? "Rebuild my career brief" : "Build my career brief";
   }
@@ -76,21 +81,79 @@
   }
   function buildBrief() {
     run(async (signal) => {
-      requireConsent(); const selected = target();
+      clearFollowup(); requireConsent(); const selected = target();
       const text = state.tab === "upload" ? await upload(signal) : $("cv-text").value;
       signal.throwIfAborted(); requireConsent(); validateText(text);
-      status("Preparing your career advice and historical market evidence. Waiting for the server…", true);
-      const data = await api("/api/advise", {...selected, text, consent:true}, signal); signal.throwIfAborted();
-      if (!data.advisor || typeof data.advisor.summary !== "string" || !data.market || !Array.isArray(data.market.skills)) throw new Error("The career brief was incomplete. Please retry; your CV text is ready in the editor.");
-      state.advisor = data.advisor; state.market = data.market; state.briefTarget = selected; state.marketTarget = selected; state.briefText = text;
-      state.skills = new Set(list(data.advisor.suggested_skills)); state.confirmed = [...state.skills]; state.reviewed = false; state.completed.clear();
-      $("include-excerpts").checked = false; $("export-status").textContent = ""; $("copy-fallback").hidden = true;
-      render(); status(data.advisor.mode === "curated" ? "Your curated brief is ready. AI was unavailable; the mode and limitations are shown in your report." : "Your career brief is ready. Review the advice and confirm your detected skills."); revealResults();
+      status("Reading your CV to ask a few quick questions…", true);
+      let questions = null;
+      try {
+        // Follow-up questions are optional: any failure goes straight to the brief.
+        const questionSignal = typeof AbortSignal.any === "function" && typeof AbortSignal.timeout === "function" ? AbortSignal.any([signal, AbortSignal.timeout(25000)]) : signal;
+        questions = await api("/api/questions", {...selected, text, consent:true}, questionSignal);
+      } catch (error) { if (signal.aborted) throw error; questions = null; }
+      signal.throwIfAborted();
+      const valid = list(questions?.questions).filter((q) => q && typeof q.id === "string" && /^q[1-9]$/.test(q.id) && typeof q.question === "string" && ["skill", "detail"].includes(q.type) && (q.type === "detail" || list(q.options).length)).slice(0, 5);
+      if (valid.length) { showFollowup({...questions, questions:valid}, selected, text); return; }
+      await advise(signal, selected, text, []);
     }, buildBrief, true);
+  }
+  async function advise(signal, selected, text, answers) {
+    status(answers.length ? "Building your career brief with your answers. Waiting for the server…" : "Preparing your career advice and historical market evidence. Waiting for the server…", true);
+    const body = {...selected, text, consent:true}; if (answers.length) body.answers = answers;
+    const data = await api("/api/advise", body, signal); signal.throwIfAborted();
+    if (!data.advisor || typeof data.advisor.summary !== "string" || !data.market || !Array.isArray(data.market.skills)) throw new Error("The career brief was incomplete. Please retry; your CV text is ready in the editor.");
+    clearFollowup(); state.answers = answers;
+    state.advisor = data.advisor; state.market = data.market; state.briefTarget = selected; state.marketTarget = selected; state.briefText = text;
+    state.skills = new Set(list(data.advisor.suggested_skills)); state.confirmed = [...state.skills]; state.reviewed = false; state.completed.clear();
+    $("include-excerpts").checked = false; $("export-status").textContent = ""; $("copy-fallback").hidden = true;
+    render(); status(data.advisor.mode === "curated" ? "Your curated brief is ready. AI was unavailable; the mode and limitations are shown in your report." : "Your career brief is ready. Review the advice and confirm your detected skills."); revealResults(); emit("brief");
+  }
+  function showFollowup(data, selected, text) {
+    state.followup = {target:selected, text, questions:data.questions};
+    $("followup-mode").innerHTML = data.mode === "groq" ? `<span class="badge">AI questions · ${esc(data.model || "model not supplied")}</span>` : '<span class="badge">Curated questions · AI unavailable</span>';
+    $("followup-mode").title = data.note || "";
+    const total = data.questions.length;
+    $("followup-questions").innerHTML = data.questions.map((q, index) => {
+      const name = `followup-${q.id}`;
+      const head = `<legend><span class="followup-count">${index + 1} of ${total}</span>${esc(q.question)}</legend>${q.why ? `<p id="${name}-why" class="hint followup-why">${esc(q.why)}</p>` : ""}`;
+      if (q.type === "skill") return `<fieldset class="followup-question" data-type="skill">${head}<div class="followup-options">${list(q.options).map((option) => `<label class="followup-option"><input type="radio" name="${name}" value="${esc(option)}"${q.why ? ` aria-describedby="${name}-why"` : ""}><span>${esc(option)}</span></label>`).join("")}</div></fieldset>`;
+      return `<fieldset class="followup-question" data-type="detail">${head}<label class="sr-only" for="${name}">Your answer (optional)</label><textarea id="${name}" name="${name}" rows="3" maxlength="400" placeholder="Optional. Only if true, e.g. who used it or what changed."${q.why ? ` aria-describedby="${name}-why"` : ""}></textarea></fieldset>`;
+    }).join("");
+    $("followup-panel").hidden = false;
+    status(`${total} quick question${total === 1 ? "" : "s"} before your brief. Answer what’s true, or skip.`);
+    $("followup-title").focus({preventScroll:true}); $("followup-panel").scrollIntoView({behavior:"auto", block:"start"});
+  }
+  function clearFollowup() {
+    state.followup = null; $("followup-panel").hidden = true; $("followup-questions").innerHTML = ""; $("followup-mode").textContent = "";
+  }
+  function followupStale(pending) {
+    return !sameTarget(target(), pending.target) || $("cv-text").value !== pending.text || !$("consent").checked || (state.tab === "upload" && !!$("cv-file").files[0]);
+  }
+  function invalidateFollowup() {
+    if (!state.followup) return;
+    clearFollowup(); status("Your CV, target or consent changed, so the follow-up questions were cleared. Build your brief again when ready.");
+  }
+  function followupAnswers(pending) {
+    return pending.questions.flatMap((q) => {
+      const field = q.type === "skill" ? $("followup-panel").querySelector(`input[name="followup-${q.id}"]:checked`) : $(`followup-${q.id}`);
+      const answer = field ? field.value.trim().slice(0, 400) : "";
+      return answer ? [{id:q.id, type:q.type, skill:typeof q.skill === "string" ? q.skill.slice(0, 100) : null, question:q.question.slice(0, 300), answer}] : [];
+    }).slice(0, 6);
+  }
+  function continueBrief(skip = false) {
+    const pending = state.followup;
+    if (!pending || state.busy) return;
+    if (followupStale(pending)) { invalidateFollowup(); return; }
+    const answers = skip ? [] : followupAnswers(pending);
+    const send = () => run(async (signal) => {
+      if (state.followup !== pending || followupStale(pending)) throw new Error("Those follow-up questions are out of date. Build your brief again.");
+      requireConsent(); await advise(signal, pending.target, pending.text, answers);
+    }, send, true);
+    send();
   }
   function previewUpload() {
     run(async (signal) => {
-      await upload(signal); $("consent").checked = false;
+      clearFollowup(); await upload(signal); $("consent").checked = false;
       status("Preview ready. Edit or remove personal details below, then tick consent again and build your brief. No AI advice request has been sent."); $("cv-text").focus();
     }, previewUpload);
   }
@@ -125,17 +188,29 @@
     $("skill-status").textContent = skillDirty() ? "Unconfirmed edits. Confirm to recalculate market evidence." : state.reviewed ? "Skills confirmed. The AI brief retains its original CV-based assessment." : "Suggested skills are waiting for your review.";
     updateStaleness();
   }
+  function answersNote(a) {
+    const used = a?.answers_used;
+    if (!used || typeof used !== "object") return "";
+    const how = {"Used it at work":"work", "Used it in a project or course":"project"};
+    const answerFor = (id) => list(state.answers).find((item) => item.type === "skill" && item.skill === id)?.answer;
+    const parts = [...list(used.added).map((id) => `+ ${label(id)}${how[answerFor(id)] ? ` (${how[answerFor(id)]})` : ""}`), ...list(used.removed).map((id) => `− ${label(id)} (not yet)`)];
+    const details = Number.isInteger(used.details) && used.details > 0 ? used.details : 0;
+    if (details) parts.push(`${details} detail${details === 1 ? "" : "s"} used`);
+    return parts.length ? `Your answers shaped this brief: ${parts.join(", ")}.` : "Your answers were noted. They did not change your detected skills.";
+  }
   function render() {
     const a = state.advisor;
     $("brief-title").textContent = a ? "Your next move, made clearer." : "Start with the market evidence.";
     $("brief-context").textContent = `${(state.briefTarget || state.marketTarget).role} · ${(state.briefTarget || state.marketTarget).country}${state.synthetic ? " · synthetic sample" : ""}`;
     $("ai-provenance").innerHTML = a ? `<span class="badge mode">${a.mode === "curated" ? "Curated fallback · no AI assessment" : `AI mode: ${esc(a.mode || "not supplied")}`}</span><span class="badge">Model: ${esc(a.model || (a.mode === "curated" ? "none (curated)" : "not supplied"))}</span>` : '<span class="badge mode">Market evidence only · no AI brief</span><span class="badge">Model: none</span>';
+    const note = answersNote(a); $("answers-used").textContent = note; $("answers-used").hidden = !note;
     $("advisor-summary").textContent = a?.summary || "AI advice could not be generated. You can still choose your skills and use historical market demand to focus your next step. Confirm your skills below to make this view useful.";
     $("strengths").innerHTML = list(a?.strengths).map((s) => `<details><summary>Evidence for ${esc(label(s.skill))}</summary><blockquote>${esc(s.evidence)}</blockquote></details>`).join("");
     $("cv-improvements").innerHTML = list(a?.cv_improvements).length ? a.cv_improvements.map((item) => `<article class="rewrite-card"><div class="rewrite-pair"><div class="rewrite-side"><p class="eyebrow">BEFORE</p><p>${esc(item.before)}</p></div><div class="rewrite-side after"><p class="eyebrow">SUGGESTED REWRITE</p><p>${esc(item.after)}</p></div></div><p class="rewrite-reason">${esc(item.reason)}</p></article>`).join("") : '<p class="empty-note">No grounded rewrite was returned. Choose a real CV bullet and clarify the task, tool and outcome. Add a metric only if you can verify it.</p>';
     $("seven-day-plan").innerHTML = list(a?.seven_day_plan).map((day, index) => `<li class="${state.completed.has(index) ? "completed" : ""}"><label><input type="checkbox" data-day="${index}" ${state.completed.has(index) ? "checked" : ""} aria-label="Mark day ${esc(day.day)} complete"><span class="day-number">Day ${esc(day.day)}</span><span><span class="day-action">${esc(day.action)}</span><span class="deliverable"><b>Keep:</b> ${esc(day.deliverable)}</span></span></label></li>`).join("");
     if (!list(a?.seven_day_plan).length) $("seven-day-plan").innerHTML = '<li class="muted">No daily plan was returned. Rebuild your brief for personalised actions.</li>';
     $("copy-checklist").disabled = !list(a?.seven_day_plan).length;
+    $("whatsapp-checklist").hidden = !list(a?.seven_day_plan).length;
     $("interview-question").textContent = a?.interview?.question || "Rebuild your career brief to get a question tailored to your CV and target role.";
     $("interview-rubric").textContent = a?.interview?.what_good_looks_like || "No interview guidance was returned.";
     $("interview-guidance").open = false;
@@ -158,7 +233,7 @@
       const selected = target(); const skills = [...state.skills]; status("Recalculating market evidence from your confirmed skills…", true);
       const market = await api("/api/analyze", {...selected, skills}, signal); signal.throwIfAborted();
       if (!Array.isArray(market.skills)) throw new Error("Market evidence was incomplete. Please retry.");
-      state.market = market; state.marketTarget = selected; state.confirmed = skills; state.reviewed = true; renderMarket(); renderSkills(); status("Market evidence updated. Your AI brief has not been regenerated.");
+      state.market = market; state.marketTarget = selected; state.confirmed = skills; state.reviewed = true; renderMarket(); renderSkills(); status("Market evidence updated. Your AI brief has not been regenerated."); emit("skills");
     }, confirmSkills);
   }
   function marketFallback() {
@@ -166,7 +241,7 @@
       const selected = target(); status("Loading historical market evidence only. No CV text is sent in this request…", true);
       const skills = [...state.skills]; const market = await api("/api/analyze", {...selected, skills}, signal); signal.throwIfAborted();
       if (!Array.isArray(market.skills)) throw new Error("Market evidence was incomplete. Please retry.");
-      state.market = market; state.marketTarget = selected; state.confirmed = skills; state.reviewed = false; render(); revealResults(); status("Market evidence is ready. Review your skills to personalise the calculation; rebuild for AI advice.");
+      state.market = market; state.marketTarget = selected; state.confirmed = skills; state.reviewed = false; render(); revealResults(); status("Market evidence is ready. Review your skills to personalise the calculation; rebuild for AI advice."); emit("brief");
     }, marketFallback);
   }
   function checklist() {
@@ -177,6 +252,11 @@
     try { await navigator.clipboard.writeText(text); $("export-status").textContent = message; status(message); }
     catch { $("copy-fallback").hidden = false; $("copy-text").value = text; $("copy-text").focus(); $("copy-text").select(); $("export-status").textContent = "Automatic copying is unavailable. Select and copy the text below."; }
   }
+  function whatsappText() {
+    const selected = state.briefTarget || target();
+    const days = list(state.advisor?.seven_day_plan).map((d, i) => `${state.completed.has(i) ? "✅" : "⬜"} Day ${d.day}: ${String(d.action).slice(0, 180)}`);
+    return `Njia — my 7-day plan (${selected.role} / ${selected.country})${briefStale() ? "\n(Based on my previous CV or target.)" : ""}\n\n${days.join("\n")}\n\n${new URL("/", location.origin).href}`;
+  }
   function downloadReport() {
     if (!state.market) return;
     const a = state.advisor, m = state.market, include = $("include-excerpts").checked;
@@ -184,6 +264,7 @@
     const targetLabel = (t) => `${t.role} / ${t.country}`;
     let html = `<header><p>NJIA / CAREER BRIEF</p><h1>Your next move, made clearer.</h1>${paragraph(`Created ${new Date().toLocaleDateString("en-KE")} · ${targetLabel(state.briefTarget || state.marketTarget)}`)}</header>`;
     html += paragraph(`Mode: ${a?.mode || "market only"} · Model: ${a?.model || "none"}`);
+    if (answersNote(a)) html += paragraph(`${answersNote(a)} Follow-up answers are self-reported.`);
     if (briefStale()) html += '<p class="notice">STALE AI BRIEF: the current CV or target has changed. This report preserves the original advice.</p>';
     if (!sameTarget(target(), state.marketTarget)) html += paragraph("Market figures reflect the market target below, not the newly selected target.");
     if (skillDirty()) html += paragraph("Unconfirmed skill edits are excluded from these market figures.");
@@ -219,21 +300,23 @@
     } catch { $("service-note").textContent = "Role and skill metadata could not load. Reconnect to restore all choices. You can still try the default Kenya / Data Analyst brief."; $("retry-meta").hidden = false; $("retry-meta").textContent = "Reconnect"; }
     finally { $("retry-meta").disabled = false; }
   }
-  $("coach-form").addEventListener("submit", (event) => { event.preventDefault(); buildBrief(); });
+  $("coach-form").addEventListener("submit", (event) => { event.preventDefault(); if (state.followup && !$("followup-panel").hidden) continueBrief(false); else buildBrief(); });
+  $("followup-submit").addEventListener("click", () => continueBrief(false));
+  $("followup-skip").addEventListener("click", () => continueBrief(true));
   ["upload", "paste"].forEach((tab) => {
     $(tab + "-tab").addEventListener("click", () => switchTab(tab));
     $(tab + "-tab").addEventListener("keydown", (event) => { if (["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) { event.preventDefault(); switchTab(event.key === "Home" ? "upload" : event.key === "End" ? "paste" : tab === "upload" ? "paste" : "upload", true); } });
   });
   $("sample").addEventListener("click", () => {
-    $("cv-file").value = ""; $("cv-text").value = SAMPLE; $("consent").checked = false; state.synthetic = true; $("sample-note").hidden = false; $("text-label").textContent = "Your experience, in your words";
+    $("cv-file").value = ""; $("cv-text").value = SAMPLE; $("consent").checked = false; state.synthetic = true; $("sample-note").hidden = false; $("text-label").textContent = "Your experience, in your words"; clearFollowup();
     if ([...$("country").options].some((o) => o.value === "Kenya")) $("country").value = "Kenya";
     if ([...$("role").options].some((o) => o.value === "Data Analyst")) $("role").value = "Data Analyst";
     updateCount(); switchTab("paste"); clearError(); status("Fictional sample loaded. Review it and tick consent to build an example brief."); $("cv-text").focus();
   });
-  $("cv-file").addEventListener("change", () => { $("file-name").textContent = $("cv-file").files[0]?.name || "PDF, DOCX or TXT · up to 4 MB"; $("consent").checked = false; clearError(); updateStaleness(); });
-  $("cv-text").addEventListener("input", () => { updateCount(); clearError(); updateStaleness(); });
-  ["country", "role"].forEach((id) => $(id).addEventListener("change", updateStaleness));
-  $("consent").addEventListener("change", () => { if (!$("consent").checked && state.busy) state.controller?.abort(); });
+  $("cv-file").addEventListener("change", () => { $("file-name").textContent = $("cv-file").files[0]?.name || "PDF, DOCX or TXT · up to 4 MB"; $("consent").checked = false; invalidateFollowup(); clearError(); updateStaleness(); });
+  $("cv-text").addEventListener("input", () => { updateCount(); invalidateFollowup(); clearError(); updateStaleness(); });
+  ["country", "role"].forEach((id) => $(id).addEventListener("change", () => { invalidateFollowup(); updateStaleness(); }));
+  $("consent").addEventListener("change", () => { invalidateFollowup(); if (!$("consent").checked && state.busy) state.controller?.abort(); });
   $("preview-upload").addEventListener("click", previewUpload);
   $("cancel-request").addEventListener("click", () => state.controller?.abort());
   $("retry").addEventListener("click", () => state.retry?.());
@@ -244,6 +327,10 @@
   $("skill-chips").addEventListener("click", (event) => { const button = event.target.closest("[data-remove-skill]"); if (!button || state.busy) return; state.skills.delete(button.dataset.removeSkill); renderSkills(); $("skill-select").focus(); });
   $("seven-day-plan").addEventListener("change", (event) => { if (!event.target.matches("[data-day]")) return; const day = Number(event.target.dataset.day); event.target.checked ? state.completed.add(day) : state.completed.delete(day); event.target.closest("li").classList.toggle("completed", event.target.checked); });
   $("copy-checklist").addEventListener("click", () => copyText(checklist(), "Action checklist copied. It contains personalised advice; review before sharing."));
+  $("whatsapp-checklist").addEventListener("click", (event) => {
+    if (!list(state.advisor?.seven_day_plan).length) { event.preventDefault(); return; }
+    event.currentTarget.href = `https://wa.me/?text=${encodeURIComponent(whatsappText())}`;
+  });
   $("download-report").addEventListener("click", downloadReport);
   $("share-app").addEventListener("click", async () => {
     const share = {title:"Njia — a clearer next move", text:"A practical career coach for your next move. Try Njia.", url:new URL("/", location.origin).href};
@@ -252,14 +339,16 @@
   });
   $("edit-input").addEventListener("click", () => { $("input-section").scrollIntoView({behavior:"auto"}); (state.tab === "paste" ? $("cv-text") : $("cv-file")).focus({preventScroll:true}); });
   $("reset").addEventListener("click", () => {
-    state.advisor = null; state.market = null; state.briefTarget = null; state.marketTarget = null; state.briefText = null; state.skills.clear(); state.confirmed = []; state.completed.clear(); state.reviewed = false; state.synthetic = false;
+    state.advisor = null; state.market = null; state.briefTarget = null; state.marketTarget = null; state.briefText = null; state.skills.clear(); state.confirmed = []; state.completed.clear(); state.reviewed = false; state.synthetic = false; state.answers = [];
+    clearFollowup(); $("answers-used").hidden = true;
     $("coach-form").reset(); $("cv-text").value = ""; $("copy-text").value = ""; $("copy-fallback").hidden = true; $("sample-note").hidden = true; $("file-name").textContent = "PDF, DOCX or TXT · up to 4 MB";
     if ([...$("country").options].some((o) => o.value === "Kenya")) $("country").value = "Kenya";
     if ([...$("role").options].some((o) => o.value === "Data Analyst")) $("role").value = "Data Analyst";
     $("text-label").textContent = "Your experience, in your words"; $("include-excerpts").checked = false; $("results").hidden = true; $("workspace").classList.remove("has-results"); $("reset").hidden = true;
     // Remove previous personal output from the DOM as well as application state.
-    ["advisor-summary", "strengths", "cv-improvements", "seven-day-plan", "interview-question", "interview-rubric", "skill-chips", "priority-cards", "jobs", "limitations", "export-status"].forEach((id) => { $(id).textContent = ""; });
+    ["advisor-summary", "strengths", "cv-improvements", "seven-day-plan", "interview-question", "interview-rubric", "skill-chips", "priority-cards", "jobs", "limitations", "export-status", "answers-used"].forEach((id) => { $(id).textContent = ""; });
     clearError(); status(""); updateCount(); switchTab("upload"); setBusy(false); $("input-section").scrollIntoView({behavior:"auto"}); $("cv-file").focus({preventScroll:true});
+    emit("reset");
   });
   loadMeta();
 })();
