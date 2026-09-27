@@ -128,11 +128,13 @@ def evidence_urls(message) -> set:
 
 
 async def chat(messages, *, json_mode=True, tools=None, tool_choice="required", max_tokens=2000,
-               timeout=45.0, temperature=0.2, reasoning_effort="low", model=None):
+               timeout=45.0, temperature=None, reasoning_effort="low", model=None):
     """One bounded chat completion. Returns ``(content, message, actual_model)``.
 
     ``tools=BROWSER_SEARCH`` enables Groq's server-side web search; JSON mode is
     then disabled (unsupported with tools), so parse with ``loose_json``.
+    Tool calls default to temperature 1.0 (Groq's browser-search setting); at low
+    temperature gpt-oss-120b produced unparseable tool calls. JSON calls use 0.2.
     ``model`` overrides the configured advisor model (e.g. ``search_model()``).
     Raises ProviderError for a missing key, transport/HTTP errors, oversized or
     malformed envelopes, credential echoes, and incomplete or empty output.
@@ -141,6 +143,8 @@ async def chat(messages, *, json_mode=True, tools=None, tool_choice="required", 
     if not key:
         raise ProviderError("Groq API key missing")
     model = model or model_name()
+    if temperature is None:
+        temperature = 1.0 if tools else 0.2
     payload = {"model": model, "stream": False, "temperature": temperature,
                "max_completion_tokens": max_tokens, "messages": messages}
     if reasoning_effort and model.startswith("openai/gpt-oss-"):

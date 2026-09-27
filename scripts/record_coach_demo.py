@@ -54,17 +54,40 @@ def answer_questions(page, questions):
     return answered
 
 
-def warm_caches(api, base):
-    """Warm server-side web-search caches (role/country only; no CV data)."""
+def warm_caches(api, base, gap=65):
+    """Warm server-side web-search caches (role/country only; no CV data).
+
+    Groq's free tier allows 8,000 tokens per minute per model, and a browser
+    search can use most of that, so searches run one at a time with a gap, and
+    the recording starts only after the window clears. Interview-search failures
+    are cached for two minutes, so its retry waits longer.
+    """
+    skills = ["excel", "sql", "power bi"]
+    plan = (("/api/jobs", {"country": COUNTRY, "role": ROLE, "skills": skills, "source": "web"},
+             lambda d: d.get("status") == "ok" and bool(d.get("jobs")), gap),
+            ("/api/interview/questions", {"country": COUNTRY, "role": ROLE, "skills": skills},
+             lambda d: d.get("mode") == "web", 125))
     warmed = []
-    for path, body in (("/api/jobs", {"country": COUNTRY, "role": ROLE, "skills": ["excel", "sql", "power bi"], "source": "web"}),
-                       ("/api/interview/questions", {"country": COUNTRY, "role": ROLE, "skills": ["excel", "sql", "power bi"]})):
-        started = time.monotonic()
-        try:
-            response = api.post(base + path, data=body, timeout=90000)
-            warmed.append({"path": path, "status": response.status, "seconds": round(time.monotonic() - started, 2)})
-        except Exception as error:  # A cold cache only slows the timeline; never fake output.
-            warmed.append({"path": path, "error": type(error).__name__})
+    for index, (path, body, good, retry_wait) in enumerate(plan):
+        if index:
+            time.sleep(gap)
+        for attempt in (1, 2):
+            started = time.monotonic()
+            try:
+                response = api.post(base + path, data=body, timeout=90000)
+                data = response.json()
+                entry = {"path": path, "attempt": attempt, "status": response.status, "ok": bool(good(data)),
+                         "cached": data.get("cached"), "mode": data.get("mode") or data.get("status"),
+                         "items": len(data.get("jobs") or data.get("questions") or []),
+                         "seconds": round(time.monotonic() - started, 2)}
+            except Exception as error:  # A cold cache only slows the timeline; never fake output.
+                entry = {"path": path, "attempt": attempt, "ok": False, "error": type(error).__name__}
+            warmed.append(entry)
+            print("warm-up:", entry, flush=True)
+            if entry["ok"] or attempt == 2:
+                break
+            time.sleep(retry_wait)
+    time.sleep(gap)
     return warmed
 
 

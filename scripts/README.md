@@ -4,9 +4,9 @@ Run from the repository root using the project's Python environment.
 
 ## Current submitted coach
 
-- `coach_acceptance.py`: current public coach acceptance checks; real provider calls require configured server access.
-- `record_coach_demo.py`: records the current 90-second captioned demo. Imports shared recording/upload helpers below.
-- `build_final_deck.py`: regenerates the eight-slide presentation and PDF; requires local presentation dependencies.
+- `coach_acceptance.py`: public coach acceptance checks, including the follow-up questions step; `--base-url` targets another origin. Real provider calls require configured server access.
+- `record_coach_demo.py`: records the 90-second captioned demo (upload → follow-up questions → brief → live jobs → rewrites/WhatsApp → web interview questions → practice feedback → download). It warms the role/country web-search caches one at a time before the first caption (Groq free-tier tokens-per-minute limit) and records the warm-up in its results JSON. `--base-url` targets another origin. Imports shared recording/upload helpers below.
+- `build_final_deck.py`: regenerates the eight-slide presentation and PDF from the `EVIDENCE` values at the top of the file; `--all` builds, renders and validates, and `--out DIR` writes a test build elsewhere. Requires python-pptx, PyMuPDF and Playwright.
 - `build_readme_images.py`: crops real synthetic-profile captures for README illustrations; requires Pillow.
 - `configure_vercel_env.py`: copies approved runtime secrets via stdin to an authenticated Vercel CLI; never commit `.env`.
 

@@ -25,7 +25,7 @@ from . import engine, groq_client
 router = APIRouter()
 
 CATEGORIES = ("technical", "behavioural", "case", "tool")
-CACHE_TTL = 6 * 3600
+CACHE_TTL = 24 * 3600  # One browser search used ~93K Groq tokens; free tier allows 200K/day per model.
 FAILURE_TTL = 120
 CACHE_MAX = 64
 _cache = OrderedDict()

@@ -8,13 +8,26 @@ The new **`POST /api/advise`** accepts CV text, country, role and `consent`. It 
 
 Groq produces a personal brief: summary, CV-evidence strengths, gap explanations and first steps, before/after CV rewrite suggestions, exactly seven daily actions with deliverables, interview question/answer guidance and suggested skills. The app calculates market counts, demand percentages, coverage and priority ranking separately; those figures are not model-authored statistics. Confirming skills recalculates market evidence but does not regenerate the original AI brief. Edited CV/target inputs are labelled as stale until rebuilt.
 
+### Added on 27 September: ask, match, practise
+
+- **Follow-up questions — `POST /api/questions`.** Requires the same consent as the brief. After basic contact scrubbing, CV text, country/role and historical top skills go to `openai/gpt-oss-20b`, which proposes 3–5 questions. Skill questions always use four server-set options; detail questions must quote a phrase that exists in the CV. Output containing contacts, links or percentages is dropped; fewer than two valid questions returns a labelled curated set.
+- **Answers in the brief — `POST /api/advise` `answers`.** Up to six self-reported answers are sent with the CV. In code, *used it at work / in a project or course* adds a vocabulary skill to the suggestions and *not yet* removes it. Rewrites may use numbers or tools only if they appear in the original CV quote or in a free-text detail answer, and are then labelled “Uses your answer — verify.” Skill-option answers never license new facts.
+- **Live jobs — `POST /api/jobs`.** `source: "remote"` calls the Himalayas public jobs API (no AI) and keeps postings whose location restrictions include the selected country or are worldwide, crediting and linking Himalayas as its terms require. `source: "web"` calls `openai/gpt-oss-120b` with Groq's built-in `browser_search` tool (powered by Exa), sending only role, country, today's date and top market skill names. A web posting is kept only if its URL appears in the tool's search results; social, profile and search pages, expired postings and postings older than 120 days are dropped. Skill match = detected posting skills that are in the user's confirmed list; it is not a hiring probability.
+- **Interview research — `POST /api/interview/questions`.** `openai/gpt-oss-120b` with `browser_search` receives only role, country and top market skill names. A question is kept only if its source URL is a page the search returned or opened (the Exa search page itself is excluded); fewer than three such questions returns a labelled curated bank. The user's skills only reorder results. “Use your evidence” hints are computed in the browser from the brief's strengths.
+- **Practice feedback — `POST /api/interview/feedback`.** Needs its own consent checkbox. The scrubbed answer (and any matching CV evidence) goes to `openai/gpt-oss-20b` in JSON mode for a 1–5 score, STAR checklist, strengths, improvements and a stronger outline. Feedback is rejected — falling back to deterministic checklist feedback — if its shape or score is invalid, or if the outline adds numbers or tool names absent from the answer and evidence, or makes a hiring promise.
+- **Rate limits and caching.** Groq's free tier limits tokens per minute and per day per model, and one observed interview search used 93,301 tokens (mostly the text of opened pages). Web research therefore defaults to `NJIA_SEARCH_MODEL=openai/gpt-oss-120b`, separate from the brief model, at temperature 1.0 (at 0.2 the 120b model repeatedly produced unparseable tool calls). Successful searches are cached in process memory per role/country (web jobs 12 h, Himalayas 1 h, interview questions 24 h); identical concurrent job searches share one provider call. Failures fall back with labels and are never presented as AI output.
+
 | Component | Method and boundary |
 | --- | --- |
 | Upload | In-memory PDF/DOCX/UTF-8 TXT parsing; no OCR; browser cap 4,000,000 bytes, backend 5 MiB |
-| New CV advice | Groq chat-completions API using consented, basic-contact-scrubbed CV text; actual model `openai/gpt-oss-20b` |
+| Follow-up questions | Groq `openai/gpt-oss-20b`, consented scrubbed CV; server-fixed options; curated fallback |
+| New CV advice | Groq chat-completions API using consented, basic-contact-scrubbed CV text plus optional answers; actual model `openai/gpt-oss-20b` |
+| Live remote jobs | Himalayas public API, country/worldwide eligibility from each listing; no AI |
+| Live local jobs / interview questions | Groq `openai/gpt-oss-120b` + `browser_search`; role/country/skill names only; URL must appear in tool results |
+| Practice feedback | Groq `openai/gpt-oss-20b`, separately consented answer; no-new-numbers/tools check; checklist fallback |
 | Keyword extraction | Local vocabulary/alias matching with simple context rules; not LLM inference |
 | Historical market | Canonicalized posting counts and top-15 demand-weighted coverage; not proficiency or hiring odds |
-| Historical retrieval | scikit-learn TF-IDF/cosine similarity; not live vacancy search |
+| Historical retrieval | scikit-learn TF-IDF/cosine similarity over 2023 postings; separate from live jobs |
 | New fallback | Labelled curated brief using keyword evidence, historical priorities, seven daily actions and interview guidance; no AI-generated assessment or invented rewrite |
 | Classic workflow only | Manual skills, four-week curated plans, optional curriculum-only Groq/Ollama wording, fixed quizzes and Markdown export |
 
