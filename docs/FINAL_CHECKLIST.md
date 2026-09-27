@@ -13,9 +13,9 @@
 | Primary award | **Click Mobile — Mobile-First Impact Award** |
 | Partner selections | **Click Mobile, Brightest GmbH, Artefact, Thunders**; each has a 2–3-sentence fit explanation in the draft |
 | Cash-prize scope | Click Mobile: **KSh 50,000 total**, Kenya only, allocation TBC; published wording does not exclude ONLINE or impose onsite attendance |
-| Current product | New CV-to-AI coach at the deployed root; older skills/four-week-plan interface at `/classic` |
-| AI | `/api/advise` requires consent, applies basic contact scrubbing, then sends CV text/context to Groq; actual production model **`openai/gpt-oss-20b`** |
-| Brief | Summary, evidence strengths, priorities, before/after suggestions, seven-day actions, interview guidance and downloadable HTML |
+| Current product | CV-to-AI coach at the deployed root with **follow-up questions, live eligible jobs, web-sourced interview questions and practice feedback** (added 27 September); older skills/four-week-plan interface at `/classic` |
+| AI | `/api/questions`, `/api/advise` and `/api/interview/feedback` require consent and use `openai/gpt-oss-20b`; `/api/jobs` (web) and `/api/interview/questions` use `openai/gpt-oss-120b` + Groq `browser_search` with role/country/skill names only; remote jobs come from the Himalayas API |
+| Brief | Follow-up answers, summary, evidence strengths, priorities, before/after suggestions, seven-day actions, interview guidance, live jobs, interview practice, WhatsApp checklist and downloadable HTML |
 | Export privacy | CV-evidence and before/after sections excluded by default; explicit inclusion available; other personalised advice may reveal CV details |
 | Accuracy limit | Observed unsupported **“real-time sales monitoring”** rewrite; generated claims require review, with no overall factual guarantee |
 | Latest reported checks | **48 acceptance + 9 recording assertions = 57**, separately from **73 backend tests** |
@@ -49,7 +49,9 @@ The form requests URLs rather than file uploads. A hosted PDF can be the present
 - [Official project form](https://docs.google.com/forms/d/e/1FAIpQLSebmyKeBPv2mrmy4T_wI2_z9SBjjSTZ-O-_ewiWs6PBEikRjw/viewform)
 - [Recorded requirements](HACKATHON_REQUIREMENTS.md), [final draft](SUBMISSION_DRAFT.md), [current AI disclosure](AI_DISCLOSURE.md)
 
-## Last steps — human review and form submission only
+## Last steps — deploy, record, review and submit
 
+- [ ] **Deploy (Eeshan):** `git pull && vercel deploy --prod`; confirm `https://gomycode-2026.vercel.app/static/jobs.js` returns 200. No new environment variables are required (`NJIA_SEARCH_MODEL` defaults to `openai/gpt-oss-120b`). Optional but recommended: move the production Groq organisation to a paid tier — one web search can use ~90K tokens against a free-tier limit of 200K tokens per day per model.
+- [ ] **Record:** `cd scripts && ../.venv/bin/python record_coach_demo.py`, then replace the release asset under the same URL: `gh release upload demo-v1 artifacts/njia-demo-90s.webm artifacts/njia-coach-demo-results.json --clobber`.
 - [ ] **Human final review:** open source/PDF/video signed out, verify the eight-page deck/exact-90-second coach recording, and review all 20 required answers plus the optional evidence. Confirm roster/registration details, enter the leader contact information privately, retain Click Mobile as primary with all four partner selections, and check the final confirmation when the deliverables are accessible and final.
 - [ ] **Human form submission:** submit the [official form](https://docs.google.com/forms/d/e/1FAIpQLSebmyKeBPv2mrmy4T_wI2_z9SBjjSTZ-O-_ewiWs6PBEikRjw/viewform) once before **19:30 EAT** and save the receipt. **Not submitted at this handoff.**
