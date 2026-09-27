@@ -10,10 +10,14 @@
 !njia/coaching.py
 !njia/engine.py
 !njia/uploads.py
+!njia/advisor.py
 !static/
 !static/index.html
 !static/app.js
 !static/styles.css
 !static/sample-cv.txt
+!static/coach.html
+!static/coach.css
+!static/coach.js
 !data/
 !data/africa_jobs_subset.jsonl

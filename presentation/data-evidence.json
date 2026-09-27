@@ -1,0 +1,13 @@
+{
+  "total_postings": 18371,
+  "countries": 10,
+  "kenya_postings": 1326,
+  "kenya_data_analyst_postings": 391,
+  "chart": {
+    "excel": 48.6,
+    "sql": 46.5,
+    "python": 41.9,
+    "r": 41.9,
+    "spss": 13.8
+  }
+}

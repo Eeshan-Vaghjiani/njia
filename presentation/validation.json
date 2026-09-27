@@ -1,0 +1,16 @@
+{
+  "pptx_slides": 8,
+  "pdf_pages": 8,
+  "aspect_ratio": "16:9",
+  "pptx_bytes": 63073,
+  "pdf_bytes": 249719,
+  "checks": [
+    "Slide/page count",
+    "Required content in PPTX and PDF",
+    "PPTX shape bounds",
+    "Speaker notes on all slides",
+    "PDF searchable text",
+    "PDF aspect ratio"
+  ],
+  "advisor_validation": "72 backend tests confirmed by main owner; 48 public acceptance + 9 recording assertions verified from artifacts; human factual review required"
+}

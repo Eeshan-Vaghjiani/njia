@@ -1,18 +1,44 @@
-# Njia — Your skills. Your market. Your path.
+# Njia — Your CV. A better next move.
 
-Njia is a career-coaching prototype built with **FastAPI and static JavaScript**. It compares self-reported skills with historical tech/data job postings, suggests a four-week learning path, and offers short practice checks and a downloadable Markdown evidence report.
+Njia is a mobile-first career-coaching prototype for Kenyan tech and data job seekers. The **deployed root is the new CV-to-AI coach**: upload or paste experience, consent to remote processing, and receive a personal career brief with evidence-linked strengths, priorities, draft CV rewrites, seven days of actions and interview practice.
 
-**Team Dhruzzz · Kenya · ONLINE.** **Live app: https://gomycode-2026.vercel.app — public browser verification PASS, 38 checks**, on 2026-09-27 at **10:25:42–10:26:00 UTC** (`artifacts/deployed-results.json`). Anonymous health returned **HTTP 200**, **18,371 postings**. Public repository access verified: https://github.com/Eeshan-Vaghjiani/njia. Team identity/contact details are held privately for submission. The presentation is outline-only; final Felo export is blocked by missing `FELO_API_KEY`.
+**Team Dhruzzz · Kenya · ONLINE**
+**Leader:** Eeshan Vaghjiani · **Members:** Eeshan Vaghjiani, Bhavin Mepani, Dhruvin Bhudia
 
-Deployment uses Vercel project `eeshans-projects-0934fb87/gomycode-2026` and a successful CLI source deploy. Automatic GitHub connection failed; automatic deployment is not configured. See [deployment details](docs/DEPLOYMENT.md).
+## Live app and submission assets
 
-**90-second demo:** [view the release page](https://github.com/Eeshan-Vaghjiani/njia/releases/tag/demo-v1) or [download the video](https://github.com/Eeshan-Vaghjiani/njia/releases/download/demo-v1/njia-demo-90s.webm). The published `artifacts/njia-demo-90s.webm` is **exactly 90.000 seconds, 1280 × 720**, a normal-speed actual-app recording of CV upload and real Groq coaching, silent with Playwright captions. Anonymous access verified: direct asset HEAD **200**, **3,498,819 bytes**.
+- **Live coach:** https://gomycode-2026.vercel.app
+- **Source:** https://github.com/Eeshan-Vaghjiani/njia
+- **Final presentation, 8 pages — PDF:** https://github.com/Eeshan-Vaghjiani/njia/releases/download/demo-v1/Njia-Dhruzzz.pdf
+- **Editable PPTX:** https://github.com/Eeshan-Vaghjiani/njia/releases/download/demo-v1/Njia-Dhruzzz.pptx
+- **90-second demo:** https://github.com/Eeshan-Vaghjiani/njia/releases/download/demo-v1/njia-demo-90s.webm
+- **Release page:** https://github.com/Eeshan-Vaghjiani/njia/releases/tag/demo-v1
 
-The default experience uses local lexicon extraction, deterministic demand calculations, TF-IDF retrieval, and curated learning activities. **No hosted inference API, API key, NVIDIA Brev, or generative model is required.**
+**27 September 2026 handoff:** the new production coach was verified with **48 acceptance assertions + 9 recording assertions = 57 total**, separately from **72 passing unit tests**, as reported by the main workflow. The updated demo is exactly **90.000 seconds**, captioned, and records the real public app and real Groq output. The final eight-page presentation was generated locally with **python-pptx and Playwright**. Release asset uploading is in progress in the main workflow; the final source push is pending. These URLs are the final handoff locations, not a fresh claim that all updated uploads have completed. Submission remains pending.
+
+## What works today
+
+1. **Bring your experience.** Choose a country and target role, then upload PDF, DOCX or UTF-8 TXT, paste 10–15,000 characters, or try the labelled fictional sample. Browser uploads are capped at 4,000,000 bytes; the parser accepts up to 5 MiB. Scanned PDFs require external OCR or pasted text.
+2. **Review and consent.** Optional “Preview & edit text first” parses the document on the server without an AI advice request, then requires consent again before coaching. Building directly from an upload parses the file and proceeds to advice under the checked consent.
+3. **Build a personal brief.** `/api/advise` sends basic-contact-scrubbed CV text to Groq after server-enforced consent. The actual production model is **`openai/gpt-oss-20b`**. The brief includes a summary, CV-evidence strengths, three market-ranked priorities and first steps, before/after rewrite suggestions, a seven-day checklist, and an interview question with answer guidance.
+4. **Check the evidence.** Review suggested skills and confirm edits to recalculate historical market figures. Confirmation updates market evidence only; it does not regenerate the AI brief. Changes to CV or target are labelled as stale until the brief is rebuilt.
+5. **Keep a useful next step.** Copy the action checklist or download `njia-career-brief.html`. CV-evidence quotes and the entire before/after rewrite sections are **excluded by default**, with an explicit checkbox to include them. Other personalised advice can still reveal experience details; review before sharing. “Share Njia” shares only the public app link.
+
+If Groq credentials are missing, the provider fails, or output fails validation, the advisor returns a labelled curated brief with keyword evidence, priorities, seven daily actions and interview guidance; it does not fabricate an AI response. Manual skills, curated four-week plans, fixed practice checks and Markdown evidence export remain available in the **older `/classic` experience**.
+
+## CV privacy and AI boundaries
+
+**The new coach sends consented CV text to AI.** `/api/advise` requires `consent=true`, applies basic contact redaction, then sends the resulting CV text, country, role, historical scope/top-skill context, allowed skill IDs and lexicon matches to Groq. Email/phone/link and labelled-identity scrubbing is **not full anonymization**; names, employers or other identifying details may remain. Remove personal details before consenting.
+
+Uploads and pasted text reach the FastAPI server. Parsing and advice processing use request memory without application-level CV persistence; on the public app this is the hosting server, not on-device processing. The browser uses in-memory state, with no account, analytics or user database. This does not guarantee secure erasure or describe hosting/Groq retention policies. Cancelling a browser request may not stop server processing already underway. Downloads persist as user files.
+
+The earlier “CV never goes to a model” boundary applies **only to `/classic` extraction and its `/api/plan` curriculum-rewriting path**, not `/api/advise`. Classic `/api/plan` sends only allowlisted structured curriculum after remote opt-in; it does not send CV text. Its `NJIA_AI_PROVIDER=offline` setting is **not a global off switch for the new advisor**, which independently uses the Groq key.
+
+**Review every generated claim and rewrite.** Validation checks output shape, source quotations, skill vocabulary and some unsupported numbers/tools, but does not guarantee factual accuracy. An observed rewrite invented **“real-time sales monitoring”**. Passing checks do not establish that this or other semantic hallucinations are eliminated. Advice is a draft, not verified qualifications or an employment guarantee.
 
 ## Run locally
 
-Run these commands from the project root with Python available. Python 3.11+ is a practical choice for a new environment.
+Python 3.11+ is recommended. The prepared dataset is included.
 
 ### Windows PowerShell
 
@@ -22,9 +48,7 @@ python -m venv .venv
 .\start.ps1
 ```
 
-Open **http://127.0.0.1:8000**. Keep the terminal running; press `Ctrl+C` to stop. Activation is unnecessary: `start.ps1` uses the project's virtual-environment Python, binds to loopback, and disables access logs.
-
-If local PowerShell policy blocks the script, the equivalent direct command is:
+Open **http://127.0.0.1:8000**. If script execution is blocked:
 
 ```powershell
 .\.venv\Scripts\python.exe -m uvicorn njia.app:app --host 127.0.0.1 --port 8000 --no-access-log
@@ -38,121 +62,39 @@ python3 -m venv .venv
 .venv/bin/python -m uvicorn njia.app:app --host 127.0.0.1 --port 8000 --no-access-log
 ```
 
-The prepared dataset is included; no data download or preparation step is needed to run the app. Package installation needs network access. Once installed, the default workflow runs locally; opening a learning-resource or dataset link visits an external website.
+For new-coach AI, configure **`GROQ_API_KEY` on the server** and `GROQ_MODEL=openai/gpt-oss-20b`; `NJIA_ADVISOR_MODEL`, if set, overrides that model for the advisor. The app loads a root `.env` if present. Never put credentials in frontend code or shared files. Installation and hosted inference need network access. With no Groq key, the new advisor returns curated fallback after consent; `/classic` also offers manual skills without submitting a CV.
 
-## What works today
+Classic optional plan rewriting uses `NJIA_AI_PROVIDER=groq` or `ollama`; its default is `offline`. Local Ollama defaults to `qwen2.5:3b`, requires a separately installed service/model, and was mock-tested only, not live-tested. The new advisor does not use Ollama.
 
-1. **Choose a market and role.** Options come from the bundled dataset.
-2. **Confirm your skills.** Upload a PDF, DOCX or UTF-8 TXT document, review/edit its text preview, then review the suggested skills. Alternatively, paste 10–15,000 characters of experience or select skills manually without submitting a CV. Text/document processing requires consent. The upload backend parses in memory and accepts up to **5 MiB**; the frontend caps files at **4,000,000 bytes** to leave room under Vercel's request limit. Scanned PDFs need external OCR. The synthetic example uses Kenya / Data Analyst. Skill chips can be removed or supplemented.
-3. **Inspect your skill gap.** View demand counts, percentages, sample size, demand-weighted coverage, and missing skills among the top 15 for the selected market and role. Empty skill profiles are supported.
-4. **See related historical postings.** Local TF-IDF and cosine similarity retrieve up to three distinct examples with overlapping skills. These are 2023 examples, not current vacancies or hiring recommendations.
-5. **Create a four-week plan.** Choose hours per week; receive demand-ranked exercises, resource links, and deliverables. Curated plans require no AI consent. Configured Groq coaching can optionally rewrite plan wording after explicit remote-AI opt-in. Week completion is tracked only in the current page session.
-6. **Practice and export.** SQL, R, Python, Excel, Power BI, and Docker each have three fixed multiple-choice questions with answer-key feedback. An optional reflection stays in browser memory and is not graded. Download `njia-skill-evidence.md` with the analysis and any generated plan or completed practice result.
+## Historical evidence and limitations
 
-Changing the market, role, or confirmed skills clears earlier results. **Clear text** removes the pasted experience while keeping confirmed skills; **Reset this session** clears skills and results as well.
+The corpus contains **18,371 postings from 2023** across Kenya, Nigeria, Tunisia, Morocco, Algeria, Senegal, Côte d’Ivoire, Saudi Arabia, Egypt and South Africa. It is a historical tech/data sample, not live vacancies or a representative labour-market survey.
 
-## How the evidence is calculated
+- Skills are canonicalized, aliases mapped and duplicates removed within each posting.
+- Below **50 local postings** for a role, the engine uses that role across the ten-country sample and labels the broader scope.
+- Demand is the percentage of selected-scope postings mentioning each skill.
+- Coverage is `100 × mentions of selected skills among the top 15 / all mentions of those top 15 skills`. It measures neither proficiency nor hiring probability.
+- Related historical examples use local TF-IDF and cosine similarity. Counts, percentages and ranking are calculated by the application, separately from generated prose.
 
-- **Canonicalization:** posting skills are lowercased, known aliases are mapped to canonical IDs, and duplicates within each posting are removed. Examples include `PowerBI` → `power bi`, `postgres` → `postgresql`, and `k8s` → `kubernetes`. Extraction matches this vocabulary and aliases with boundaries and simple context/negation rules; it does not infer arbitrary skills or use embeddings.
-- **Scope:** when a country/role has fewer than **50** postings, analysis and retrieval use that role's combined **10-country Africa/MENA sample**. The interface shows the local count and expanded scope.
-- **Demand:** a skill's percentage is the share of selected-scope postings mentioning it, counting each posting at most once per skill.
-- **Coverage:** `100 × mentions of confirmed skills among the top 15 / all mentions of those top 15 skills`. This is neither tested proficiency nor a probability of employment.
-- **Retrieval:** TF-IDF vectors represent canonical posting skills, with cosine similarity used for ranking. No LLM or hosted search service is involved.
+Prepared data documentation attributes the source to [lukebarousse/data_jobs](https://huggingface.co/datasets/lukebarousse/data_jobs) and identifies Apache-2.0. Provenance and licensing were not independently verified; this is not a licence determination for Njia's code. Genuine user feedback and employment outcomes have not been established.
 
-## Data and limitations
+## Validation and tool disclosure
 
-The application loads `data/africa_jobs_subset.jsonl`: **18,371 historical 2023 postings** across Kenya, Nigeria, Tunisia, Morocco, Algeria, Senegal, Côte d'Ivoire, Saudi Arabia, Egypt, and South Africa. Kenya contributes 1,326 postings across roles.
+The latest main-workflow report distinguishes **57 production/recording assertions (48 + 9)** from **72 unit tests**. Earlier 38-check production and four-week-plan recordings describe the older classic workflow, not the current root acceptance run. No tests were rerun in this documentation-only update.
 
-Prepared source documentation in `data/prepare_data.py` and `data/africa_skill_demand.json` attributes the dataset to [lukebarousse/data_jobs on Hugging Face](https://huggingface.co/datasets/lukebarousse/data_jobs) and identifies **Apache-2.0**. This is an attribution/licence statement from the prepared documentation, **not independently verified provenance or licensing**. It does not establish a licence for Njia's application code.
+The earlier extraction-only evaluation used 20 developer-authored synthetic CV examples: 41 true positives, 2 false positives, 1 false negative; precision 0.9535, recall 0.9762, and 17/20 exact skill-set matches. Its zero model calls/cost applies only to keyword extraction, not the new coach. These checks are not independent real-user, fairness or model-quality validation; mobile browser evidence is not a physical-phone study.
 
-The preparation script filters selected countries and rows with non-null skill fields. The runtime recalculates demand from canonicalized posting rows rather than using the older aggregate JSON. These tech/data postings are not a representative survey of all employers, workers, informal work, or current demand. Expanding a small sample improves sample size but reduces local specificity. Keyword mentions and short quizzes do not establish competence; Njia issues **no certification**.
-
-## Privacy and optional AI
-
-Raw experience text and uploaded documents are sent to the app server and processed in request memory, without application-level persistence or submission to a model. When run locally, that server is on your computer; on a public deployment, it is the hosting server, **not laptop-only or on-device processing**. Document previews may contain personal information. The frontend keeps session state in memory, without localStorage/sessionStorage, accounts, analytics, or a user database. Text remains in the page until cleared; this is not a secure-erasure guarantee or a claim about hosting-provider infrastructure.
-
-Basic redaction removes email addresses, phone-like numbers, links, and explicitly labelled identity lines before extraction. It can miss personal details and remove unrelated numbers; it is **not full anonymization**. Downloaded reports are intentionally saved files and include confirmed skills and any submitted practice reflection, but not raw CV text.
-
-The default `NJIA_AI_PROVIDER=offline` needs no inference credentials. The live Vercel app is configured for Groq with `GROQ_MODEL=openai/gpt-oss-20b`; remote use still requires opt-in. Optional providers are documented in `.env.example`; configure them in the server environment. The app also loads a root `.env` if present.
-
-**Hosted Groq is implemented and live-tested by the main workflow on 2026-09-27:** the actual model `openai/gpt-oss-20b` returned a four-week plan in **2.27 seconds** in one observed run. The account's model list did not offer the original `llama-3.3-70b-versatile`, so the default was changed to `openai/gpt-oss-20b`. This is a single integration observation, not a latency benchmark or quality evaluation. Set `NJIA_AI_PROVIDER=groq`, a server-held `GROQ_API_KEY`, and `GROQ_MODEL=openai/gpt-oss-20b` to configure it.
-
-Remote generation requires explicit opt-in: `/api/plan` checks `use_ai` and `ai_consent` server-side. Curated plans remain available without consent. Only allowlisted structured curriculum is sent to Groq, **not CV text, identities, country/role or demand statistics**. The server-held API key must never be exposed in browser code or public documentation.
-
-For optional local Ollama:
-
-```dotenv
-NJIA_AI_PROVIDER=ollama
-NJIA_OLLAMA_URL=http://127.0.0.1:11434
-NJIA_OLLAMA_MODEL=qwen2.5:3b
-```
-
-This requires a separately installed, running Ollama and a downloaded model (`ollama pull qwen2.5:3b`). **Ollama was not installed or live-tested for this build.** Its integration is covered by mocked tests only. No model is downloaded or started by Njia.
-
-Optional models rewrite only plan titles, tasks, and deliverables from structured curriculum. Statistics, skill targets, hours, and resource links remain deterministic. The Ollama endpoint must use a loopback hostname; this restriction does not apply to the separate hosted Groq integration. Missing credentials, connection failures, rate limits or invalid output return the complete curated plan. `NJIA_AI_PROVIDER=offline` restores the default. A configured-provider label does not prove model availability; the returned plan identifies the mode that actually ran.
-
-Development used OpenCode with main agent label `github-copilot/gpt-6-astra` and parallel coding/review agents in the same harness; their underlying model identities were not independently established. UI visuals are code-native HTML/CSS. The captioned Playwright demo records the actual app and real model output, with no fabricated screenshots/output or synthetic voice. See [AI disclosure](docs/AI_DISCLOSURE.md) for runtime boundaries and validation details.
-
-## Checks and recorded results
-
-**Production Chromium: 38/38 PASS**, fresh anonymous desktop **1440×1100** and touch-mobile **390×844** contexts, synthetic inputs, no mocked responses. Desktop actual PDF upload → editable preview → consent-gated extraction → Kenya/Data Analyst (**391 postings, 39.6%**) passed, followed by four curated weeks with AI opt-in unchecked, one opted-in real Groq response (**`mode=groq`, `openai/gpt-oss-20b`, four weeks, 1.831 s**), SQL **3/3**, and Markdown report download. Fresh mobile TXT upload → reviewed preview/extraction → gap analysis passed without horizontal overflow. Observed JavaScript errors, console errors, failed requests and HTTP 403s: **zero**. This single Groq observation is not a benchmark. Public DOCX, near-limit uploads and physical phones were not tested; the local results below retain their separate scope.
-
-From the project root, run:
-
-```powershell
-.\.venv\Scripts\python.exe -m unittest discover -s tests -v
-.\.venv\Scripts\python.exe scripts/evaluate.py
-```
-
-**57 unittest methods passed**, as reported by the main workflow at the 2026-09-27 checkpoint; this documentation-only update did not rerun them. Coverage includes calculations, extraction, retrieval, plans, upload parsing/validation, hosted-provider privacy and output boundaries, mocked Ollama behavior, practice grading, and HTTP protections. The limited identity-swap test is not a fairness audit.
-
-The first-stage `artifacts/evaluation.json` records:
-
-| Extraction metric | Recorded value |
-| --- | ---: |
-| Synthetic developer-authored CV examples | 20 |
-| True positives / false positives / false negatives | 41 / 2 / 1 |
-| Precision | 0.9535 |
-| Recall | 0.9762 |
-| Exact skill-set matches | 17/20 |
-| Warm median extraction time | 0.97 ms |
-| Warm maximum extraction time | 15.47 ms |
-| Inference API calls / cost | 0 / $0 |
-
-This is a first-stage, small synthetic extraction check, not independent validation, upload-parser evaluation or an end-to-end speed benchmark. Timing excludes corpus startup, document parsing, HTTP/browser work, retrieval, and optional generation. Zero inference calls/cost applies only to that extraction run, not hosted Groq or total operating costs. Re-running `scripts/evaluate.py` overwrites the artifact and may change timing.
-
-For Chromium checks, keep the local server running in a separate terminal:
-
-```powershell
-.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
-.\.venv\Scripts\python.exe -m playwright install chromium
-.\.venv\Scripts\python.exe scripts/browser_test.py
-.\.venv\Scripts\python.exe scripts/mobile_upload_test.py
-```
-
-On Linux, use `.venv/bin/python` for these commands; Chromium may also require Playwright's system dependencies. **Current-build Chromium verification passed** at desktop 1440×1100 and mobile 390×844, with no JavaScript errors or external page requests. It exercised extraction, analysis, plans, progress, practice grading, report downloads, sample fallback, manual/empty skills, reset, and session isolation. Screenshots and results are in `artifacts/`.
-
-**Current desktop browser evidence, supplied by the main workflow on 2026-09-27:** `scripts/upload_browser_test.py` passed actual PDF, DOCX and TXT uploads through editable preview → extraction → analysis; invalid-file, oversize, scanned-PDF and consent-error cases passed. Real Groq coaching passed with `openai/gpt-oss-20b` in-browser and in the completed video.
-
-**Current mobile TXT upload: PASS.** `scripts/mobile_upload_test.py` passed Chromium mobile emulation at **390×844, touch=True**: actual synthetic TXT file upload with processing consent → text preview → extraction → Kenya gap analysis (**39.6%**) → four-week curated plan → Markdown download. The result records **0 model calls and 0 JavaScript errors**; the script also passed its horizontal-overflow assertion at analysis. This verifies TXT on an emulated mobile browser, not mobile PDF/DOCX or a physical phone. Local evidence: `artifacts/mobile-upload-results.json` and `artifacts/mobile-upload-plan.png`. Genuine user feedback has not been collected.
-
-`artifacts/` is Git-ignored. The main workflow is publishing JSON evidence and screenshots to the existing [demo-v1 release](https://github.com/Eeshan-Vaghjiani/njia/releases/tag/demo-v1); only attached assets are publicly downloadable. See [test results](docs/LOCAL_TEST_RESULTS.md) for production timestamps, captures and local scope.
-
-All five asynchronous regression checks passed on the current build, deliberately delivering held responses after newer user actions: clear-during-extraction, competing plans, assessment restart, competing grades, and preserving answers across tabs. Run them against the local server with:
-
-```powershell
-.\.venv\Scripts\python.exe scripts/race_test.py
-```
+Development used **OpenCode**, main agent label `github-copilot/gpt-6-astra`, plus coding/review agents in the same harness whose underlying identities were not independently established. UI visuals are code-native HTML/CSS. The final deck was generated locally with **python-pptx + Playwright**, **not Felo or Gemini**. Gemini access was rejected with **HTTP 403 (suspended key)**; Gemini was never used for inference. NVIDIA Brev was not used. The captioned demo records real public-app behaviour and real Groq output, without fabricated responses or synthetic voice.
 
 ## Project map
 
-- `njia/app.py`: FastAPI endpoints and static frontend serving; local API reference at `/docs`.
-- `njia/engine.py`: corpus, canonicalization, extraction, demand, and retrieval.
-- `njia/coaching.py`: curated curriculum and optional Groq/Ollama rewriting.
-- `njia/uploads.py`: in-memory PDF/DOCX/TXT parsing for editable previews.
-- `njia/assessment.py`: fixed practice questions and grading.
-- `static/`: HTML, CSS, and JavaScript interface.
-- `tests/`, `scripts/`, `artifacts/`: automated checks, evaluation, and recorded outputs.
-- [90-second demo](docs/DEMO.md) and [AI disclosure](docs/AI_DISCLOSURE.md).
+- `njia/app.py`: API, `/` coach and `/classic` routes.
+- `njia/advisor.py`: consented-CV Groq assessment, validation and curated fallback.
+- `njia/engine.py`: corpus, keyword extraction, demand and historical retrieval.
+- `njia/uploads.py`: in-memory document parsing.
+- `njia/coaching.py`, `njia/assessment.py`: classic plans and fixed practice checks.
+- `static/coach.html`, `static/coach.js`, `static/coach.css`: new root interface.
+- `tests/`, `scripts/`, `artifacts/`: checks and local evidence; `artifacts/` is Git-ignored.
+- [20-field submission draft](docs/SUBMISSION_DRAFT.md), [AI disclosure](docs/AI_DISCLOSURE.md), [final checklist](docs/FINAL_CHECKLIST.md).
 
-`GAME_PLAN.md`, `STRATEGY.md`, research notes, and existing pitch decks are earlier planning material. Use the current source, these docs, and [presentation outline](docs/PRESENTATION_OUTLINE.md) for claims. NVIDIA Brev is not used. Source and video access are verified; the [live Vercel app](https://gomycode-2026.vercel.app) passed the 38 production checks scoped above. Final presentation export awaits `FELO_API_KEY`; submission remains pending.
+Earlier planning documents and classic-flow evidence may describe superseded features. Use this README and the three final documents above for current submission claims. The source and live URLs are unchanged; final source publication is pending in the main workflow.

@@ -9,7 +9,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import assessment, coaching, engine, uploads
+from . import assessment, coaching, engine, uploads, advisor
 
 load_dotenv(engine.ROOT / ".env")
 
@@ -47,6 +47,11 @@ async def local_headers(request: Request, call_next):
 class ExtractRequest(BaseModel):
     text: str = Field(min_length=10, max_length=15000)
     consent: bool
+
+
+class AdvisorRequest(ExtractRequest):
+    country: str = Field(max_length=80)
+    role: str = Field(max_length=80)
 
 
 class AnalysisRequest(BaseModel):
@@ -103,6 +108,19 @@ def analyze(body: AnalysisRequest):
     return {**result, "elapsed_ms": round((time.perf_counter()-start)*1000, 1)}
 
 
+@app.post("/api/advise")
+async def advise(body: AdvisorRequest):
+    if not body.consent:
+        raise HTTPException(422, "Consent is required to send redacted CV text to the AI provider. You can use the manual skills tool instead.")
+    if len(body.text.strip()) < 10:
+        raise HTTPException(422, "Add at least 10 characters about your experience.")
+    validate_market(AnalysisRequest(country=body.country, role=body.role, skills=[]))
+    start = time.perf_counter()
+    result = await advisor.assess_cv(body.text, body.country, body.role)
+    market = engine.analyze(body.country, body.role, result["suggested_skills"])
+    return {"advisor": result, "market": market, "elapsed_ms": round((time.perf_counter()-start)*1000, 1)}
+
+
 @app.post("/api/plan")
 async def plan(body: PlanRequest):
     result = engine.analyze(body.country, body.role, validate_market(body))
@@ -130,6 +148,11 @@ def grade(body: GradeRequest):
 
 @app.get("/")
 def index():
+    return FileResponse(engine.ROOT / "static/coach.html")
+
+
+@app.get("/classic")
+def classic():
     return FileResponse(engine.ROOT / "static/index.html")
 
 

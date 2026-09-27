@@ -1,0 +1,23 @@
+{
+  "backend_tests_passed": 72,
+  "backend_count_source": "Main implementation owner confirmation",
+  "public_acceptance_assertions": 48,
+  "recording_assertions": 9,
+  "public_total": 57,
+  "provider": "Groq",
+  "model": "openai/gpt-oss-20b",
+  "observed_seconds": {
+    "desktop": 2.259,
+    "mobile": 1.318,
+    "recording_with_pdf": 2.26
+  },
+  "javascript_errors": 0,
+  "sample_size": 391,
+  "coverage": 39.6,
+  "video_seconds": 90,
+  "source_artifacts": [
+    "artifacts/coach-acceptance-results.json",
+    "artifacts/njia-coach-demo-results.json"
+  ],
+  "factual_limit": "Observed unsupported real-time sales monitoring in a rewrite; human factual review required."
+}
